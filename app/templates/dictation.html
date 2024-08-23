@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dictation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #wordsContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .word-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin: 10px;
+            width: 100%;
+        }
+        .word-border {
+            border: 2px solid #000;
+            padding: 10px;
+            margin-right: 10px;
+        }
+
+        .word {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .hidden {
+            visibility: hidden;
+        }
+
+        button {
+            background-color: #20f719;
+            color:  rgb(56, 50, 50);
+            font: 1em sans-serif;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <button id="doneButton">Done 完成</button>
+        <button id="reinputButton" onclick="delete_audios()">Reinput 重新开始</button>
+        <button id="retryButton">Retry 重来</button>
+    </div>
+    <div id="wordsContainer">
+        {% for word in words %}
+        <div class="word-item" data-word="{{ word }}">
+            <span class="number">{{ loop.index }}.&nbsp;</span>
+            <div class="word-border">
+            <span class="word hidden">{{ word }}</span>
+            </div>
+            <button class="hide-button" onclick="toggleHide(this)">Hide/Unhide 可以看/不可以看</button>
+            <button class="play-button" onclick="playWord('{{ word }}')">Play 听声音</button>
+            <button class="play-button" onclick="window.open(`https://www.google.com/search?q={{ word }}`, '_blank')">Google</button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.getElementById('doneButton').addEventListener('click', function() {
+            document.querySelectorAll('.word').forEach(function(el) {
+                el.classList.remove('hidden');
+            });
+        });
+
+        document.getElementById('retryButton').addEventListener('click', function() {
+            location.reload();
+        });
+
+        function toggleHide(button) {
+            const wordSpan = button.parentElement.querySelector('.word');
+            if (wordSpan.classList.contains('hidden')) {
+                wordSpan.classList.remove('hidden');
+            } else {
+                wordSpan.classList.toggle('hidden');
+            }
+            
+        }
+
+        function playWord(word) {
+            fetch(`/play_word/${word}`)
+                .then(response => response.json())
+                .then(() => {
+                    const audio = new Audio(`static/audio/${word}.mp3`);
+                    audio.play();
+                });
+        }
+
+        function delete_audios() {
+            y = confirm('Are you sure you want to exit?\n你确定要退出吗？');
+            if (y == true){
+            fetch('/delete_audios')
+                .then(response => response.json())
+                .then(() => {
+                    window.location.href = '/';
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+

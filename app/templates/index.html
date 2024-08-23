@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dictation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 36px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 50%;
+            margin: 0 auto;
+        }
+
+        textarea {
+            font-size: 18px;
+            padding: 10px;
+            margin-bottom: 10px;
+            resize: none;
+        }
+
+        select {
+            font-size: 18px;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        #buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        button {
+            background-color: #20f719;
+            color: rgb(56, 50, 50);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Dictation</h1>
+    <form id="dictationForm" method="POST" action="/submit_words">
+        <textarea name="words" id="words" cols="30" rows="10" placeholder="spelling&#10;ejaan&#10;听写"></textarea>
+        <select name="lang" id="lang">
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+            <option value="ms">Bahasa Malaysia</option>
+        </select>
+        <div id="buttons">
+            <button type="submit" id="startButton" disabled>Start 开始</button>
+            <button type="reset">Reset 重置</button>
+        </div>
+    </form>
+</body>
+<script>
+    const wordsTextarea = document.getElementById('words');
+    const startButton = document.getElementById('startButton');
+    wordsTextarea.addEventListener('input', function() {
+        if (wordsTextarea.value.trim().length > 0) {
+            startButton.disabled = false;
+        } else {
+            startButton.disabled = true;
+        }
+    });
+</script>
+</html>
+
