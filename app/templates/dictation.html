@@ -43,7 +43,7 @@
 
         button {
             background-color: #20f719;
-            color:  rgb(56, 50, 50);
+            color: rgb(56, 50, 50);
             font: 1em sans-serif;
             padding: 10px 20px;
             border: none;
@@ -58,6 +58,7 @@
     </style>
 </head>
 <body>
+    <h1>You have chosen the language: <span id="language"></span></h1>
     <div>
         <button id="doneButton">Done 完成</button>
         <button id="reinputButton" onclick="delete_audios()">Reinput 重新开始</button>
@@ -68,16 +69,100 @@
         <div class="word-item" data-word="{{ word }}">
             <span class="number">{{ loop.index }}.&nbsp;</span>
             <div class="word-border">
-            <span class="word hidden">{{ word }}</span>
+                <span class="word hidden">{{ word }}</span>
             </div>
             <button class="hide-button" onclick="toggleHide(this)">Hide/Unhide 可以看/不可以看</button>
             <button class="play-button" onclick="playWord('{{ word }}')">Play 听声音</button>
-            <button class="play-button" onclick="window.open(`https://www.google.com/search?q={{ word }}`, '_blank')">Google</button>
+            <button class="play-button" onclick="window.open('https\:\/\/www.google.com/search?q={{ word|urlencode }}', '_blank')">Google</button>
+
+            <button class="play-button" id="dictionary-button" onclick="window.open('https\:\/\/dictionary.cambridge.org/dictionary/english-chinese-simplified/{{ word|urlencode }}', '_blank')">Check Dictionary  </button>
+            <button class="play-button" id="zh-dictionary-button" onclick="openCharacterPopup('{{ word }}')"> 笔顺、拼音 </button>
+
         </div>
         {% endfor %}
     </div>
-
     <script>
+        function openCharacterPopup(word) {
+            // Remove underscores if present and split the word into characters
+            const wordFormatted = word.replace(/_/g, '');
+            const characters = wordFormatted.split('');
+            
+            // Create the popup window
+            const popup = window.open('', '_blank', 'width=400,height=400');
+    
+            // Write the basic HTML structure to the popup
+            popup.document.write('<html><head><title>Character Popup</title></head><body><h1>请点击字来查看拼音或笔顺</h1>');
+    
+            // Add each character button to the popup
+            characters.forEach(character => {
+                popup.document.write(
+                    '<div class="button">' + 
+                    '<button onclick="window.open(\'http://bishun.strokeorder.info/mandarin.php?q=' + encodeURIComponent(character) + '\', \'_blank\')">' +
+                    '<h1>' + character + '</h1>' +
+                    '</button>' +
+                    '</div>'
+                );
+            });
+    
+            // Close the HTML structure
+            popup.document.write('</body></html>');
+            popup.document.close();
+        }
+    </script>
+    <script>
+        
+        async function fetchLanguage() {
+            try {
+                const response = await fetch('/get_langs.json');
+                const data = await response.json();
+                const lang = data.langs;
+                const languages = {'en': 'English', 'zh': '中文', 'ms': 'Bahasa Malaysia'};
+                document.getElementById('language').textContent = languages[lang] || 'Unknown Language';
+                console.log('Language:', lang);
+                if (lang === 'zh') {
+                    document.getElementById('dictionary-button').style.display = 'none';
+                    document.getElementById('zh-dictionary-button').style.display = 'inline-block';
+                }
+                else{
+                    document.getElementById('zh-dictionary-button').style.display = 'none';
+                    document.getElementById('dictionary-button').style.display = 'inline-block';
+                }
+            } catch (error) {
+                console.error('Error fetching language:', error);
+            }
+        }
+
+        fetchLanguage();
+
+        function toggleHide(button) {
+            const wordItem = button.closest('.word-item');
+            const wordSpan = wordItem.querySelector('.word');
+            wordSpan.classList.toggle('hidden');
+        }
+
+        function playWord(word) {
+            fetch(`/play_word/${word}`)
+                .then(response => response.json())
+                .then(() => {
+                    const audio = new Audio(`static/audio/${word}.mp3`);
+                    audio.play();
+                    audio.addEventListener('ended', function() {
+                        fetch('/delete_audios.json');
+                    });
+                });
+        }
+
+        function delete_audios() {
+            const y = confirm('Are you sure you want to exit?\n你确定要退出吗？');
+            if (y) {
+                fetch('/delete_audios.json')
+                    .then(response => response.json())
+                    .then(() => {
+                        window.location.href = '/';
+                    });
+            }
+        }
+
         document.getElementById('doneButton').addEventListener('click', function() {
             document.querySelectorAll('.word').forEach(function(el) {
                 el.classList.remove('hidden');
@@ -87,37 +172,6 @@
         document.getElementById('retryButton').addEventListener('click', function() {
             location.reload();
         });
-
-        function toggleHide(button) {
-            const wordSpan = button.parentElement.querySelector('.word');
-            if (wordSpan.classList.contains('hidden')) {
-                wordSpan.classList.remove('hidden');
-            } else {
-                wordSpan.classList.toggle('hidden');
-            }
-            
-        }
-
-        function playWord(word) {
-            fetch(`/play_word/${word}`)
-                .then(response => response.json())
-                .then(() => {
-                    const audio = new Audio(`static/audio/${word}.mp3`);
-                    audio.play();
-                });
-        }
-
-        function delete_audios() {
-            y = confirm('Are you sure you want to exit?\n你确定要退出吗？');
-            if (y == true){
-            fetch('/delete_audios.json')
-                .then(response => response.json())
-                .then(() => {
-                    window.location.href = '/';
-                });
-            }
-        }
     </script>
 </body>
 </html>
-

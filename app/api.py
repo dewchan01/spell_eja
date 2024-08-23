@@ -48,3 +48,7 @@ def delete_audios():
         for file in os.listdir(audio_dir):
             os.remove(os.path.join(audio_dir, file))
     return jsonify({'status': 'success'})
+
+@app.route('/get_langs.json', methods=['GET'])
+def get_langs():
+    return jsonify({'langs': lang})
