@@ -42,12 +42,10 @@ def play_word(word):
         print(e)
         return jsonify({'status': 'error'}), 500
 
-@app.route('/_frozen_play_word/<word>', methods=['GET'])
-def frozen_play_word(word):
-    return play_word(word)
-
-@app.route('/delete_audios.json', methods=['GET'])
+@app.route('/delete_audios.json', methods=['GET'])  # Ensure correct extension
 def delete_audios():
-    for file in os.listdir('app/static/audio'):
-        os.remove(f'app/static/audio/{file}')
+    audio_dir = 'app/static/audio'
+    if os.path.exists(audio_dir):
+        for file in os.listdir(audio_dir):
+            os.remove(os.path.join(audio_dir, file))
     return jsonify({'status': 'success'})
