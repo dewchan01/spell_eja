@@ -41,8 +41,12 @@ def play_word(word):
     except Exception as e:
         print(e)
         return jsonify({'status': 'error'}), 500
+
+@app.route('/_frozen_play_word/<word>', methods=['GET'])
+def frozen_play_word(word):
+    return play_word(word)
     
-@app.route('/delete_audios', methods=['GET'])
+@app.route('/delete_audios.json', methods=['GET'])
 def delete_audios():
     for file in os.listdir('app/static/audio'):
         os.remove(f'app/static/audio/{file}')
