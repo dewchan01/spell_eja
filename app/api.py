@@ -1,7 +1,8 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for
+from flask import jsonify, render_template, request, redirect, url_for
+from app import app
 import random
-import os
 from gtts import gTTS
+import os
 
 words = []
 lang = None
@@ -12,10 +13,10 @@ def submit_words(words_list, language):
     lang = language
     return 'Words submitted'
 
-app = Flask(__name__)
 @app.route('/')
 def index():
     return render_template('index.html')
+
 @app.route('/submit_words', methods=['POST'])
 def submit_words_route():
     words_list = request.form['words'].split('\n')
@@ -23,17 +24,19 @@ def submit_words_route():
     language = request.form['lang']
     submit_words(words_list, language)
     return redirect(url_for('dictation_page'))
-@app.route('/dictation_page')
+
+@app.route('/dictation_page.html')
 def dictation_page():
     global words
     random.shuffle(words)
     return render_template('dictation.html', words=words)
+
 @app.route('/play_word/<word>', methods=['GET'])
 def play_word(word):
     global lang
     try:
         tts = gTTS(text=word, lang=lang, slow=False)
-        tts.save(f"static/audio/{word}.mp3")
+        tts.save(f"app/static/audio/{word}.mp3")
         return jsonify({'status': 'success'})
     except Exception as e:
         print(e)
@@ -41,9 +44,6 @@ def play_word(word):
     
 @app.route('/delete_audios', methods=['GET'])
 def delete_audios():
-    for file in os.listdir('static/audio'):
-        os.remove(f'static/audio/{file}')
+    for file in os.listdir('app/static/audio'):
+        os.remove(f'app/static/audio/{file}')
     return jsonify({'status': 'success'})
-
-if __name__ == '__main__':
-    app.run(debug=True)
