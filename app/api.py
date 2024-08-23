@@ -20,7 +20,6 @@ def index():
 @app.route('/submit_words', methods=['POST'])
 def submit_words_route():
     words_list = request.form['words'].split('\n')
-    print(words_list)
     language = request.form['lang']
     submit_words(words_list, language)
     return redirect(url_for('dictation_page'))
