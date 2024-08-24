@@ -67,7 +67,7 @@
 
 <body>
     <h1>Dictation</h1>
-    <form id="dictationForm" method="POST" action="/submit_words">
+    <form id="dictationForm" method="POST" action="/submit_words" onsubmit="submitWords(event)">
         <textarea name="words" id="words" cols="30" rows="10" placeholder="spelling&#10;ejaan&#10;听写"></textarea>
         <select name="lang" id="lang">
             <option value="en">English</option>
@@ -75,25 +75,51 @@
             <option value="ms">Bahasa Malaysia</option>
         </select>
         <div id="buttons">
-            <button type="submit" id="startButton" disabled>Start 开始</button>
+            <button type="submit" id="startButton">Start 开始</button>
             <button type="reset">Reset 重置</button>
         </div>
     </form>
+    <script>
+        const storedData = localStorage.getItem('dictationForm');
+        if (storedData) {
+            const data = JSON.parse(storedData);
+            Object.entries(data).forEach(([name, value]) => {
+                const element = document.querySelector(`form [name="${name}"]`);
+                if (element) {
+                    element.value = value;
+                }
+            });
+        }
+    </script>
     <div id="footer">
         <p><a href='mailto:deweichan@gmail.com?subject=feedback'>Email me for feedback&nbsp;</p>
         <p>&copy; 2024 Dew IT</p>
     </div>
 </body>
 <script>
-    const wordsTextarea = document.getElementById('words');
-    const startButton = document.getElementById('startButton');
-    wordsTextarea.addEventListener('input', function() {
-        if (wordsTextarea.value.trim().length > 0) {
-            startButton.disabled = false;
-        } else {
-            startButton.disabled = true;
+    function submitWords(event) {
+        if (!event.target.words.value.trim().length) {
+            alert('Please enter at least one word.');
+            event.preventDefault();
+            return;
         }
-    });
+        if (/^[a-zA-Z0-9]+$/.test(event.target.words.value.trim()) && event.target.lang.value === 'zh') {
+            alert('Please choose only English or Malay words.');
+            event.preventDefault();
+            return;
+        }
+        if ((event.target.lang.value === 'ms' || event.target.lang.value === 'en') && !/^[a-zA-Z0-9]+$/.test(event.target.words.value.trim())){
+                alert('Please choose 中文.');
+                event.preventDefault();
+                return;
+            }
+            
+        localStorage.setItem('dictationForm', JSON.stringify(Object.fromEntries(new FormData(event.target).entries())));
+    }
+    document.getElementById('dictationForm').addEventListener('reset', function() {
+        localStorage.removeItem('dictationForm');
+    })
+
 </script>
 </html>
 

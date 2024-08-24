@@ -18,6 +18,7 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            width: 90%;
         }
 
         .word-item {
@@ -25,7 +26,6 @@
             flex-direction: row;
             align-items: center;
             margin: 10px;
-            width: 100%;
         }
 
         .word-border {
@@ -65,10 +65,9 @@
         }
     </style>
 </head>
-
 <body>
-    <h1>You have chosen the language: 
-        <select name="lang" id="lang">
+    <h1>You have chosen the language:
+        <select name="lang" id="lang" disabled>
             <option value="en">English</option>
             <option value="zh">中文</option>
             <option value="ms">Bahasa Malaysia</option>
@@ -102,7 +101,7 @@
             const characters = wordFormatted.split('');
 
             // Create the popup window
-            const popup = window.open('', '_blank', 'width=400,height=400');
+            const popup = window.open('', '_blank', 'width=200,height=200');
 
             // Write the basic HTML structure to the popup
             popup.document.write('<html><head><title>Character Popup</title></head><body><h1>请点击字来查看拼音或笔顺</h1>');
