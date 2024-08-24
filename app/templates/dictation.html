@@ -74,9 +74,8 @@
             <button class="hide-button" onclick="toggleHide(this)">Hide/Unhide 可以看/不可以看</button>
             <button class="play-button" onclick="playWord('{{ word }}')">Play 听声音</button>
             <button class="play-button" onclick="window.open('https\:\/\/www.google.com/search?q={{ word|urlencode }}', '_blank')">Google</button>
-
-            <button class="play-button" id="dictionary-button" onclick="window.open('https\:\/\/dictionary.cambridge.org/dictionary/english-chinese-simplified/{{ word|urlencode }}', '_blank')">Check Dictionary  </button>
-            <button class="play-button" id="zh-dictionary-button" onclick="openCharacterPopup('{{ word }}')"> 笔顺、拼音 </button>
+            <button class="play-button dictionary-button" onclick="window.open('https://dictionary.cambridge.org/dictionary/english-chinese-simplified/{{ word|urlencode }}', '_blank')">Check Dictionary 检查词典</button>
+            <button class="play-button zh-dictionary-button" onclick="openCharacterPopup('{{ word }}')"> 笔顺、拼音 </button>
 
         </div>
         {% endfor %}
@@ -112,27 +111,30 @@
     <script>
         
         async function fetchLanguage() {
-            try {
-                const response = await fetch('/get_langs.json');
-                const data = await response.json();
-                const lang = data.langs;
-                const languages = {'en': 'English', 'zh': '中文', 'ms': 'Bahasa Malaysia'};
-                document.getElementById('language').textContent = languages[lang] || 'Unknown Language';
-                console.log('Language:', lang);
-                if (lang === 'zh') {
-                    document.getElementById('dictionary-button').style.display = 'none';
-                    document.getElementById('zh-dictionary-button').style.display = 'inline-block';
-                }
-                else{
-                    document.getElementById('zh-dictionary-button').style.display = 'none';
-                    document.getElementById('dictionary-button').style.display = 'inline-block';
-                }
-            } catch (error) {
-                console.error('Error fetching language:', error);
-            }
-        }
+    try {
+        const response = await fetch('/get_langs.json');
+        const data = await response.json();
+        const lang = data.langs;
+        const languages = {'en': 'English', 'zh': '中文', 'ms': 'Bahasa Malaysia'};
+        document.getElementById('language').textContent = languages[lang] || 'Unknown Language';
+        
+        const dictionaryButtons = document.querySelectorAll('.dictionary-button');
+        const zhDictionaryButtons = document.querySelectorAll('.zh-dictionary-button');
 
-        fetchLanguage();
+        if (lang === 'zh') {
+            dictionaryButtons.forEach(button => button.style.display = 'none');
+            zhDictionaryButtons.forEach(button => button.style.display = 'inline-block');
+        } else {
+            zhDictionaryButtons.forEach(button => button.style.display = 'none');
+            dictionaryButtons.forEach(button => button.style.display = 'inline-block');
+        }
+    } catch (error) {
+        console.error('Error fetching language:', error);
+    }
+}
+
+        document.addEventListener('DOMContentLoaded', fetchLanguage);
+
 
         function toggleHide(button) {
             const wordItem = button.closest('.word-item');
