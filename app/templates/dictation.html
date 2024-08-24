@@ -74,7 +74,7 @@
             <button class="hide-button" onclick="toggleHide(this)">Hide/Unhide 可以看/不可以看</button>
             <button class="play-button" onclick="playWord('{{ word }}')">Play 听声音</button>
             <button class="play-button" onclick="window.open('https\:\/\/www.google.com/search?q={{ word|urlencode }}', '_blank')">Google</button>
-            <button class="play-button dictionary-button" onclick="window.open('https://dictionary.cambridge.org/dictionary/english-chinese-simplified/{{ word|urlencode }}', '_blank')">Check Dictionary 检查词典</button>
+            <button class="play-button dictionary-button">Check Dictionary 检查词典</button>
             <button class="play-button zh-dictionary-button" onclick="openCharacterPopup('{{ word }}')"> 笔顺、拼音 </button>
 
         </div>
@@ -137,6 +137,14 @@
                     window.open(`https://www.ekamus.info/index.php/term/马来文-华文字典,${encodeURIComponent(word)}.xhtml`, '_blank');
                 });
             });
+        }else{
+            dictionaryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const wordItem = button.closest('.word-item');
+                    const word = wordItem.dataset.word;
+                    window.open('https://dictionary.cambridge.org/dictionary/english-chinese-simplified/{{ word|urlencode }}', '_blank');
+                });
+            })
         }
     } catch (error) {
         console.error('Error fetching language:', error);
