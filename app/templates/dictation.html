@@ -110,7 +110,7 @@
     </script>
     <script>
         
-        async function fetchLanguage() {
+    async function fetchLanguage() {
     try {
         const response = await fetch('/get_langs.json');
         const data = await response.json();
@@ -128,13 +128,22 @@
             zhDictionaryButtons.forEach(button => button.style.display = 'none');
             dictionaryButtons.forEach(button => button.style.display = 'inline-block');
         }
+
+        if (lang === 'ms') {
+            dictionaryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const wordItem = button.closest('.word-item');
+                    const word = wordItem.dataset.word;
+                    window.open(`https://www.ekamus.info/index.php/term/马来文-华文字典,${encodeURIComponent(word)}.xhtml`, '_blank');
+                });
+            });
+        }
     } catch (error) {
         console.error('Error fetching language:', error);
     }
 }
 
-        document.addEventListener('DOMContentLoaded', fetchLanguage);
-
+document.addEventListener('DOMContentLoaded', fetchLanguage);
 
         function toggleHide(button) {
             const wordItem = button.closest('.word-item');
