@@ -32,7 +32,7 @@ def dictation_page():
 
 @app.route('/play_word/<string:word>/<string:lang>', methods=['GET'])
 def play_word(word, lang):
-    print("MN",word, lang)
+    print("User typed: ", word, lang)
     try:
         tts = gTTS(text=word, lang=lang, slow=False)
         tts.save(f"app/static/audio/{word}_{lang}.mp3")

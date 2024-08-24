@@ -87,7 +87,7 @@
                 <span class="word hidden">{{ word }}</span>
             </div>
             <button class="hide-button" onclick="toggleHide(this)">Hide/Unhide 可以看/不可以看</button>
-            <button class="play-button" onclick="playWord('{{ word }}')">Play 听声音</button>
+            <button class="play-button" onclick="playWord('{{ word|urlencode }}')">Play 听声音</button>
             <button class="play-button"
                 onclick="window.open('https\:\/\/www.google.com/search?q={{ word|urlencode }}', '_blank')">Google</button>
             <button class="play-button dictionary-button">Check Dictionary 检查词典</button>
@@ -185,7 +185,7 @@
                 fetch(`/play_word/${word}/${lang.value}`)
                 .then(response => response.json())
                 .then(() => {
-                    const audio = new Audio(`static/audio/${word}_${ lang.value }.mp3`);
+                    const audio = new Audio(`static/audio/${word}_${lang.value}.mp3`);
                     audio.play();
                     audio.addEventListener('ended', function () {
                         fetch('/delete_audios.json');
