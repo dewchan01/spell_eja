@@ -30,12 +30,12 @@ def dictation_page():
     random.shuffle(words)
     return render_template('dictation.html', words=words)
 
-@app.route('/play_word/<word>', methods=['GET'])
-def play_word(word):
-    global lang
+@app.route('/play_word/<string:word>/<string:lang>', methods=['GET'])
+def play_word(word, lang):
+    print("MN",word, lang)
     try:
         tts = gTTS(text=word, lang=lang, slow=False)
-        tts.save(f"app/static/audio/{word}.mp3")
+        tts.save(f"app/static/audio/{word}_{lang}.mp3")
         return jsonify({'status': 'success'})
     except Exception as e:
         print(e)

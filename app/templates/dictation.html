@@ -171,6 +171,7 @@
             const data = await response.json();
             const initialLang = data.langs;
             document.getElementById('lang').value = initialLang;
+            var lang = initialLang;
             updateLanguage(initialLang);
         });
 
@@ -180,11 +181,11 @@
             wordSpan.classList.toggle('hidden');
         }
 
-        function playWord(word, lang) {
-            fetch(`/play_word/${word}`)
+        function playWord(word) {
+                fetch(`/play_word/${word}/${lang.value}`)
                 .then(response => response.json())
                 .then(() => {
-                    const audio = new Audio(`static/audio/${word}.mp3`);
+                    const audio = new Audio(`static/audio/${word}_${ lang.value }.mp3`);
                     audio.play();
                     audio.addEventListener('ended', function () {
                         fetch('/delete_audios.json');
