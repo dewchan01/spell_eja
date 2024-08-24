@@ -35,7 +35,7 @@
         }
 
         .word {
-            font-size: 24px;
+            font-size: 28px;
             margin-bottom: 10px;
         }
 
@@ -57,11 +57,17 @@
         button:hover {
             background-color: #45a049;
         }
+
+        select {
+            font-size: 18px;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
 <body>
-    <h1>You have chosen the language: <span id="language"></span>
+    <h1>You have chosen the language: 
         <select name="lang" id="lang">
             <option value="en">English</option>
             <option value="zh">中文</option>
@@ -70,7 +76,7 @@
     </h1>
     <div>
         <button id="doneButton">Done 完成</button>
-        <button id="reinputButton" onclick="delete_audios()">Reinput 重新开始</button>
+        <button id="reinputButton" onclick="delete_audios()">Restart 重新开始</button>
         <button id="retryButton">Retry 重来</button>
     </div>
     <div id="wordsContainer">
@@ -119,26 +125,29 @@
 
         async function updateLanguage(lang) {
             const languages = { 'en': 'English', 'zh': '中文', 'ms': 'Bahasa Malaysia' };
-            document.getElementById('language').textContent = languages[lang] || 'Unknown Language';
-
             const dictionaryButtons = document.querySelectorAll('.dictionary-button');
             const zhDictionaryButtons = document.querySelectorAll('.zh-dictionary-button');
-
+            
             dictionaryButtons.forEach(button => {
                 const newButton = button.cloneNode(true);
                 button.parentNode.replaceChild(newButton, button);
+                
                 if (lang === 'ms') {
+                    newButton.style.display = 'block';
                     newButton.addEventListener('click', function () {
                         const wordItem = newButton.closest('.word-item');
                         const word = wordItem.dataset.word;
                         window.open(`https://www.ekamus.info/index.php/term/马来文-华文字典,${encodeURIComponent(word)}.xhtml`, '_blank');
                     });
-                } else {
+                } else if (lang === 'en') {
+                    newButton.style.display = 'block';
                     newButton.addEventListener('click', function () {
                         const wordItem = newButton.closest('.word-item');
                         const word = wordItem.dataset.word;
                         window.open(`https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${encodeURIComponent(word)}`, '_blank');
                     });
+                }else if (lang === 'zh') {
+                    newButton.style.display = 'none';
                 }
             });
 
