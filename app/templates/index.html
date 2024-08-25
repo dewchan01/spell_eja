@@ -44,6 +44,19 @@
             border-radius: 5px;
         }
 
+        #historyContainer {
+            font-size: 24px;
+            padding: 5px;
+            margin-right: 4vw;
+            border-radius: 5px;
+            float: right;
+        }
+
+        #historyContainer i {
+            margin-right: 5px;
+            font-size: 36px;
+        }
+
         #buttons {
             display: flex;
             justify-content: space-between;
@@ -80,6 +93,29 @@
 
 <body>
     <h1>Spelling-Ejaan-听写</h1>
+    <div id="historyContainer">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <select id="history">
+        <option value="" disabled selected>History 搜寻历史 </option>
+    </select>
+    </div>
+    <script>
+        const historySelect = document.getElementById('history');
+        const history = localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : [];
+        history.forEach(word => {
+            const option = document.createElement('option');
+            option.value = word;
+            option.text = word;
+            historySelect.appendChild(option);
+        });
+        historySelect.addEventListener('change', (e) => {
+            const selectedWord = e.target.value;
+            if (selectedWord) {
+                document.getElementById('words').value = selectedWord;
+            }
+        });
+    </script>
+    </script>
     <form id="dictationForm" method="POST" action="/submit_words" onsubmit="submitWords(event)">
         <textarea name="words" id="words" cols="30" rows="10" placeholder="spelling&#10;ejaan&#10;听写"></textarea>
         <select name="lang" id="lang">
@@ -136,7 +172,11 @@
 
 
         localStorage.setItem('dictationForm', JSON.stringify(Object.fromEntries(new FormData(event.target).entries())));
+        const previousHistory = localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : [];
+        const newHistory = [...previousHistory,  words ];
+        localStorage.setItem('history', JSON.stringify(newHistory));
     }
+
         document.getElementById('dictationForm').addEventListener('reset', function () {
         localStorage.removeItem('dictationForm');
     })

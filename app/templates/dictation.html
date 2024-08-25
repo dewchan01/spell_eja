@@ -182,7 +182,7 @@
     <script>
         function openCharacterPopup(word) {
             const wordFormatted = word.replace(/_/g, '');
-            const characters = wordFormatted.split('');
+            const characters = [...new Set(wordFormatted.split(' '))];
             const modal = document.getElementById('myModal');
             const modalBody = document.getElementById('modal-body');
             modalBody.innerHTML = ''; // Clear previous content
