@@ -173,7 +173,7 @@
 
         localStorage.setItem('dictationForm', JSON.stringify(Object.fromEntries(new FormData(event.target).entries())));
         const previousHistory = localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : [];
-        const newHistory = [...previousHistory,  words ];
+        const newHistory = [...previousHistory, ...words.split('\n').filter(word => word.trim() !== '')];
         localStorage.setItem('history', JSON.stringify(newHistory));
     }
 

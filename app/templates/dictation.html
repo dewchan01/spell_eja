@@ -182,26 +182,27 @@
     <script>
         function openCharacterPopup(word) {
             const wordFormatted = word.replace(/_/g, '');
-            const characters = [...new Set(wordFormatted.split(' '))];
+            const characters = [...new Set(wordFormatted.split(''))];
             const modal = document.getElementById('myModal');
             const modalBody = document.getElementById('modal-body');
             modalBody.innerHTML = ''; // Clear previous content
 
-            characters.forEach(character => {
+            Promise.all(characters.map(character =>
                 fetch('/convert_pinyin?data=' + encodeURIComponent(character))
                     .then(response => response.json())
-                    .then(data => {
+                    )).then(dataList => {
+                    dataList.forEach(({ pinyin }, index) => {
+                        const character = characters[index];
                         modalBody.innerHTML +=
                             '<div class="button" style="display: inline-block; margin-right: 10px;">' +
                             '<button onclick="window.open(\'http://bishun.strokeorder.info/mandarin.php?q=' + encodeURIComponent(character) + '\', \'_blank\')">' +
                             '<h1>' + character +
-                            '<p>' + data.pinyin + '</p>' +
+                            '<p>' + pinyin + '</p>' +
                             '</h1>' +
                             '</button>' +
                             '</div>';
-                    });
+                });
             });
-
             // Display the modal
             modal.style.display = 'block';
 
