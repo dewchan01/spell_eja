@@ -81,9 +81,11 @@
         #buttons {
             display: flex;
             flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
             justify-content: center;
-            font-size: 30px;
-
+            font-size: 45px;
+            gap: 60px;
         }
 
         #reinputButton {
@@ -152,8 +154,8 @@
 
 <body>
     <div id="buttons">
-        <button id="retryButton"><i class="fa-solid fa-hourglass-start"> Start 开始听写</i></button>
-        <button id="reinputButton" onclick="delete_audios()"><i class="fa-solid fa-check"> Done 完成听写</i></button>
+        <button id="retryButton"><i class="fa-solid fa-hourglass-start"> Start<br />开始听写</i></button>
+        <button id="reinputButton" onclick="delete_audios()"><i class="fa-solid fa-check"> Done<br />完成听写</i></button>
     </div>
     <div id="wordsContainer">
         {% for word in words %}
@@ -164,8 +166,7 @@
             <button class="play-button"
                 onclick="window.open('https://www.google.com/search?q={{ word|urlencode }}', '_blank')"><i
                     class="fa-brands fa-google"></i></button>
-            <button class="play-button dictionary-button"><i class="fa-solid fa-book"> Check Dictionary
-                    <br />检查词典</i></button>
+            <button class="play-button dictionary-button"><i class="fa-solid fa-book"> Dictionary</i></button>
             <button class="play-button zh-dictionary-button" onclick="openCharacterPopup('{{ word }}')"><i
                     class="fa-solid fa-book-open"> 笔顺、拼音、部首</i> </button>
         </div>
@@ -231,13 +232,8 @@
                     newButton.addEventListener('click', function () {
                         const wordItem = newButton.closest('.word-item');
                         let word = wordItem.dataset.word;
-                        word = encodeURIComponent(word)
-                        console.log(word.includes("%20"))
-                        if (word.includes("%20")) {
-                            window.open(`https://www.ekamus.info/index.php/term/马来文-华文字典,${word.split('%20')[0]}.xhtml,${word.split('%20')[1]}.xhtml`, '_blank');
-                        } else {
-                            window.open(`https://www.ekamus.info/index.php/term/马来文-华文字典,${encodeURIComponent(word)}.xhtml`, '_blank');
-                        }
+                        window.open(`https://ms.glosbe.com/ms/zh/${encodeURIComponent(word)}`, '_blank');
+                       
                     });
                 } else if (lang === 'en') {
                     newButton.style.display = 'block';
