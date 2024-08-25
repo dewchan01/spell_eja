@@ -155,12 +155,14 @@
 <body>
     <div id="buttons">
         <button id="retryButton"><i class="fa-solid fa-hourglass-start"> Start<br />开始听写</i></button>
-        <button id="reinputButton" onclick="delete_audios()"><i class="fa-solid fa-check"> Done<br />完成听写</i></button>
+        <button id="reinputButton" onclick="exitPage()"><i class="fa-solid fa-check"> Done<br />完成听写</i></button>
     </div>
     <div id="wordsContainer">
         {% for word in words %}
         <div class="word-item" data-word="{{ word }}">
             <span class="word">{{ word }}</span>
+            <button class="play-button draw-button" id="draw-{{ word }}" onclick="openHandwrittingPopup('{{ word }}')"
+                style='visibility:hidden'><i class="fa-solid fa-pen-to-square"></i></button>
             <button class="play-button" onclick="playWord('{{ word|urlencode }}')"><i
                     class="fa-solid fa-play"></i></button>
             <button class="play-button"
@@ -190,19 +192,54 @@
             Promise.all(characters.map(character =>
                 fetch('/convert_pinyin?data=' + encodeURIComponent(character))
                     .then(response => response.json())
-                    )).then(dataList => {
-                    dataList.forEach(({ pinyin }, index) => {
-                        const character = characters[index];
-                        modalBody.innerHTML +=
-                            '<div class="button" style="display: inline-block; margin-right: 10px;">' +
-                            '<button onclick="window.open(\'http://bishun.strokeorder.info/mandarin.php?q=' + encodeURIComponent(character) + '\', \'_blank\')">' +
-                            '<h1>' + character +
-                            '<p>' + pinyin + '</p>' +
-                            '</h1>' +
-                            '</button>' +
-                            '</div>';
+            )).then(dataList => {
+                dataList.forEach(({ pinyin }, index) => {
+                    const character = characters[index];
+                    modalBody.innerHTML +=
+                        '<div class="button" style="display: inline-block; margin-right: 10px;">' +
+                        '<button onclick="window.open(\'http://bishun.strokeorder.info/mandarin.php?q=' + encodeURIComponent(character) + '\', \'_blank\')">' +
+                        '<h1>' + character +
+                        '<p>' + pinyin + '</p>' +
+                        '</h1>' +
+                        '</button>' +
+                        '</div>';
                 });
             });
+            // Display the modal
+            modal.style.display = 'block';
+
+            // Close the modal when the user clicks on <span> (x)
+            document.querySelector('.close').onclick = function () {
+                modal.style.display = 'none';
+            };
+
+            // Close the modal when the user clicks anywhere outside of the modal
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        }
+
+        function openHandwrittingPopup(word) {
+            const modal = document.getElementById('myModal');
+            const modalBody = document.getElementById('modal-body');
+            const modalTitle = document.querySelector('.modal h1');
+            modalBody.innerHTML = ''; // Clear previous content
+            modalTitle.textContent = `Handwriting for "${word}"`;
+
+            const data = JSON.parse(localStorage.getItem('handwrittenData') || '{}');
+            if (data[word]) {
+                const drawing = data[word];
+                const img = document.createElement('img');
+                img.src = drawing;
+                modalBody.appendChild(img);
+            } else {
+                const p = document.createElement('p');
+                p.textContent = 'No handwritten data for this word';
+                modalBody.appendChild(p);
+            }
+
             // Display the modal
             modal.style.display = 'block';
 
@@ -234,7 +271,7 @@
                         const wordItem = newButton.closest('.word-item');
                         let word = wordItem.dataset.word;
                         window.open(`https://ms.glosbe.com/ms/zh/${encodeURIComponent(word)}`, '_blank');
-                       
+
                     });
                 } else if (lang === 'en') {
                     newButton.style.display = 'block';
@@ -264,6 +301,13 @@
             const localStorageData = JSON.parse(localStorage.getItem('dictationForm'));
             lang = localStorageData.lang;
             updateLanguage(localStorageData.lang);
+            const handwrittenData = JSON.parse(localStorage.getItem('handwrittenData') || '{}');
+            Object.keys(handwrittenData).forEach(word => {
+                const drawButton = document.getElementById(`draw-${word}`);
+                if (drawButton) {
+                    drawButton.style.visibility = 'visible';
+                }
+            });
         });
 
         function playWord(word) {
@@ -278,12 +322,13 @@
                 });
         }
 
-        function delete_audios() {
+        function exitPage() {
             fetch('/delete_audios.json')
                 .then(response => response.json())
                 .then(() => {
                     window.location.href = '/';
                 });
+            localStorage.removeItem('handwrittenData');
         }
 
         document.getElementById('retryButton').addEventListener('click', function () {

@@ -180,6 +180,9 @@
 </head>
 
 <body>
+    <script>
+        let currentWord = '';
+    </script>
     <div class="header">
         <h2>Press<i class="fa-solid fa-play"></i> to play each word!</h2>
         <h2>点击<i class="fa-solid fa-play"></i> 播放每个单词</h2>
@@ -194,7 +197,7 @@
         </div>
         <!-- Signature Pad -->
         <div class="signature-pad-container">
-            <h1><i>Write</i></h1>
+            <h1><i>Write & Save</i></h1>
             <div class="canvas-container">
                 <canvas id="signature-pad"></canvas>
             </div>
@@ -281,13 +284,38 @@
 
             clearButton.addEventListener('click', () => {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+                currentWord = '';
             });
 
+            const data = JSON.parse(localStorage.getItem('data') || '{}');
             saveButton.addEventListener('click', () => {
                 const dataURL = canvas.toDataURL('image/png');
-                localStorage.setItem('signature', dataURL);
-                alert('Signature saved!');
+                if (currentWord) {
+                    data[currentWord] = dataURL;
+                    localStorage.setItem('handwrittenData', JSON.stringify(data));
+                    alert(`Handwritting saved!`);
+                } else {
+                    alert('Please play a word before saving your handwritting.');
+                }
             });
+
+            rightArrow.addEventListener('click', () => {
+                const data = JSON.parse(localStorage.getItem('handwrittenData'));
+                if (!Object.keys(data).includes(currentWord)) {
+                    alert('You have not save your handwritting.');
+                }
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                currentWord = '';
+            })
+
+            leftArrow.addEventListener('click', () => {
+                const data = JSON.parse(localStorage.getItem('handwrittenData'));
+                if (!Object.keys(data).includes(currentWord)) {
+                    alert('You have not save your handwritting.');
+                }
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                currentWord = '';
+            })
 
             // Initial setup
             resizeCanvas();
@@ -330,6 +358,7 @@
         }
 
         function playWord(word) {
+            currentWord = word.trim() // Update the current word
             const dictationData = JSON.parse(localStorage.getItem('dictationForm'));
             const lang = dictationData.lang;
             fetch(`/play_word/${word}/${lang}`)
@@ -342,7 +371,6 @@
                     });
                 });
         }
-
         // Create and append buttons for all words
         words.forEach(word => {
             const wordButton = createWordButton(word);
