@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Dictation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,6 +22,9 @@
             align-items: center;
             width: 90%;
             margin: 0 auto;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         textarea {
@@ -28,12 +32,16 @@
             padding: 10px;
             margin-bottom: 10px;
             resize: none;
+            border: 2px solid #000000;
+            border-radius: 5px;
         }
 
         select {
             font-size: 36px;
             padding: 5px;
             margin-bottom: 10px;
+            border: 2px solid #000000;
+            border-radius: 5px;
         }
 
         #buttons {
@@ -43,7 +51,6 @@
         }
 
         button {
-            background-color: #20f719;
             color: rgb(56, 50, 50);
             padding: 10px 20px;
             border: none;
@@ -52,8 +59,14 @@
             font-size: 36px;
         }
 
-        button:hover {
-            background-color: #45a049;
+        #startButton {
+            background-color: #16751b;
+            color: #f5f5f5;
+        }
+
+        #resetButton{
+            background-color: #f71919;
+            color: #f5f5f5;
         }
 
         #footer {
@@ -75,8 +88,8 @@
             <option value="ms">Bahasa Malaysia</option>
         </select>
         <div id="buttons">
-            <button type="submit" id="startButton">Start 开始</button>
-            <button type="reset">Reset 重置</button>
+            <button type="submit" id="startButton"><i class="fa-solid fa-hourglass-start"> Start 开始</i></button>
+            <button type="reset" id="resetButton"><i class="fa-solid fa-trash"> Reset 重置</i></button>
         </div>
     </form>
     <script>
@@ -92,8 +105,8 @@
         }
     </script>
     <div id="footer">
-        <p><a href='mailto:deweichan@gmail.com?subject=feedback'>Email me for feedback&nbsp;</p>
-        <p>&copy; 2024 Dew IT</p>
+        <p>&copy; 2024 Dew IT&nbsp;</p>
+        <p><a href='mailto:deweichan@gmail.com?subject=feedback'>Every feedback is welcome!</a></p>
     </div>
 </body>
 <script>
@@ -109,21 +122,14 @@
 
         // Check if the input contains English letters when the selected language is Chinese
         if (/[a-zA-Z]/.test(words) && lang === 'zh') {
-            alert('Please choose only 中文 (Chinese) words.');
-            event.preventDefault();
-            return;
-        }
-
-        // Check if the input contains only Chinese characters when the selected language is Chinese
-        if (lang === 'zh' && !/^[\u4e00-\u9fff]+$/.test(words)) {
-            alert('Please choose only 中文 (Chinese) words.');
+            alert('Please choose English or Bahasa Malaysia');
             event.preventDefault();
             return;
         }
 
         // Check if the selected language is Malay or English and if the input contains only allowed characters
         if ((lang === 'ms' || lang === 'en') && !/^[a-zA-Z0-9'-\s]+$/.test(words)) {
-            alert('Please choose only English or Malay words.');
+            alert('Please enter valid characters');
             event.preventDefault();
             return;
         }

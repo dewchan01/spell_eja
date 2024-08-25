@@ -1,6 +1,6 @@
 from flask import jsonify, render_template, request, redirect, url_for
+from pypinyin import Style, pinyin
 from app import app
-import random
 from gtts import gTTS
 import os
 
@@ -22,12 +22,11 @@ def submit_words_route():
     words_list = request.form['words'].split('\n')
     language = request.form['lang']
     submit_words(words_list, language)
-    return redirect(url_for('dictation_page'))
+    return redirect(url_for('dict'))
 
 @app.route('/dictation_page.html')
 def dictation_page():
     global words
-    random.shuffle(words)
     return render_template('dictation.html', words=words)
 
 @app.route('/play_word/<string:word>/<string:lang>', methods=['GET'])
@@ -52,3 +51,15 @@ def delete_audios():
 @app.route('/get_langs.json', methods=['GET'])
 def get_langs():
     return jsonify({'langs': lang})
+
+@app.route('/dict.html')
+def dict():
+    return render_template('dict.html',words=words)
+
+@app.route('/convert_pinyin', methods=['GET'])
+def convert_pinyin():
+    data = request.args.get('data')
+    pinyin_result = pinyin(data)
+    pinyin_text = ' '.join([''.join(item) for item in pinyin_result])
+
+    return jsonify({'pinyin': pinyin_text})

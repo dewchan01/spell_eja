@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Dictation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,13 +13,20 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            margin: 0;
+            padding: 20px;
         }
 
         #wordsContainer {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
             width: 90%;
+            border: 3px solid #000; /* Outermost border */
+            padding: 20px;
+            margin-top: 5vh;
+            border-radius: 10px; /* Rounded corners for a cleaner look */
+            background-color: #fff; /* White background for contrast */
         }
 
         .word-item {
@@ -26,25 +34,21 @@
             flex-direction: row;
             align-items: center;
             margin: 10px;
-        }
-
-        .word-border {
-            border: 2px solid #000;
+            border: 1px solid #000; /* Border for each word item */
             padding: 10px;
-            margin-right: 10px;
+            border-radius: 5px;
+            background-color: #eaeaea; /* Slight background color for each item */
+            width: 100%;
         }
 
         .word {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .hidden {
-            visibility: hidden;
+            font-size: 58px;
+            margin-right: 10px;
+            flex: 1;
         }
 
         button {
-            background-color: #20f719;
+            background-color: #fab965;
             color: rgb(56, 50, 50);
             font: 1em sans-serif;
             padding: 10px 20px;
@@ -52,10 +56,14 @@
             border-radius: 5px;
             cursor: pointer;
             margin: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        button:hover {
-            background-color: #45a049;
+        .play-button i {
+            margin-right: 5px; /* Space between icon and text */
+            font-size: 36px;
         }
 
         select {
@@ -63,8 +71,75 @@
             padding: 5px;
             margin-bottom: 10px;
         }
+
+        #buttons {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            font-size: 30px ;
+
+        }
+
+        #reinputButton {
+            background-color: red;
+            color: #f5f5f5;
+        }
+
+        #doneButton {
+            background-color: green;
+            color: #f5f5f5;
+        }
+
+        #retryButton {
+            background-color: #3a19f7;
+            color: #f5f5f5;
+        }
+
+        /* Styles for the modal */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        /* Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .button {
+            margin-bottom: 10px;
+        }
+
     </style>
 </head>
+
 <body>
     <h1>You have chosen the language:
         <select name="lang" id="lang" disabled>
@@ -73,64 +148,77 @@
             <option value="ms">Bahasa Malaysia</option>
         </select>
     </h1>
-    <div>
-        <button id="doneButton">Done 完成</button>
-        <button id="reinputButton" onclick="delete_audios()">Restart 重新开始</button>
-        <button id="retryButton">Retry 重来</button>
+    <div id="buttons">
+        <button id="doneButton"><i class="fa-solid fa-check"> Done 完成</i></button>
+        <button id="reinputButton" onclick="delete_audios()"><i class="fa-solid fa-redo"> Restart 重新开始</i></button>
+        <button id="retryButton"><i class="fa-solid fa-refresh"> Retry 重来</i></button>
     </div>
     <div id="wordsContainer">
         {% for word in words %}
         <div class="word-item" data-word="{{ word }}">
-            <span class="number">{{ loop.index }}.&nbsp;</span>
-            <div class="word-border">
-                <span class="word hidden">{{ word }}</span>
-            </div>
-            <button class="hide-button" onclick="toggleHide(this)">Hide/Unhide 可以看/不可以看</button>
-            <button class="play-button" onclick="playWord('{{ word|urlencode }}')">Play 听声音</button>
-            <button class="play-button"
-                onclick="window.open('https\:\/\/www.google.com/search?q={{ word|urlencode }}', '_blank')">Google</button>
-            <button class="play-button dictionary-button">Check Dictionary 检查词典</button>
-            <button class="play-button zh-dictionary-button" onclick="openCharacterPopup('{{ word }}')"> 笔顺、拼音 </button>
+            <span class="word">{{ word }}</span>
+            <button class="play-button" onclick="playWord('{{ word|urlencode }}')"><i class="fa-solid fa-play"></i></button>
+            <button class="play-button" onclick="window.open('https://www.google.com/search?q={{ word|urlencode }}', '_blank')"><i class="fa-brands fa-google"></i></button>
+            <button class="play-button dictionary-button"><i class="fa-solid fa-book"> Check Dictionary 检查词典</i></button>
+            <button class="play-button zh-dictionary-button" onclick="openCharacterPopup('{{ word }}')"><i class="fa-solid fa-book-open"> 笔顺、拼音、部首</i>    </button>
         </div>
         {% endfor %}
     </div>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h1>请点击字来查看笔顺、部首</h1>
+            <div id="modal-body"></div>
+        </div>
+    </div>
     <script>
         function openCharacterPopup(word) {
-            // Remove underscores if present and split the word into characters
             const wordFormatted = word.replace(/_/g, '');
             const characters = wordFormatted.split('');
+            const modal = document.getElementById('myModal');
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = ''; // Clear previous content
 
-            // Create the popup window
-            const popup = window.open('', '_blank', 'width=200,height=200');
-
-            // Write the basic HTML structure to the popup
-            popup.document.write('<html><head><title>Character Popup</title></head><body><h1>请点击字来查看拼音或笔顺</h1>');
-
-            // Add each character button to the popup
             characters.forEach(character => {
-                popup.document.write(
-                    '<div class="button">' +
-                    '<button onclick="window.open(\'http://bishun.strokeorder.info/mandarin.php?q=' + encodeURIComponent(character) + '\', \'_blank\')">' +
-                    '<h1>' + character + '</h1>' +
-                    '</button>' +
-                    '</div>'
-                );
+                fetch('/convert_pinyin?data=' + encodeURIComponent(character))
+                    .then(response => response.json())
+                    .then(data => {
+                        modalBody.innerHTML +=
+                            '<div class="button" style="display: inline-block; margin-right: 10px;">' +
+                            '<button onclick="window.open(\'http://bishun.strokeorder.info/mandarin.php?q=' + encodeURIComponent(character) + '\', \'_blank\')">' +
+                            '<h1>' + character +
+                            '<p>'+ data.pinyin + '</p>' +
+                            '</h1>'  +
+                            '</button>' +
+                            '</div>';
+                    });
             });
 
-            // Close the HTML structure
-            popup.document.write('</body></html>');
-            popup.document.close();
+            // Display the modal
+            modal.style.display = 'block';
+
+            // Close the modal when the user clicks on <span> (x)
+            document.querySelector('.close').onclick = function() {
+                modal.style.display = 'none';
+            };
+
+            // Close the modal when the user clicks anywhere outside of the modal
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
         }
 
         async function updateLanguage(lang) {
             const languages = { 'en': 'English', 'zh': '中文', 'ms': 'Bahasa Malaysia' };
             const dictionaryButtons = document.querySelectorAll('.dictionary-button');
             const zhDictionaryButtons = document.querySelectorAll('.zh-dictionary-button');
-            
+
             dictionaryButtons.forEach(button => {
                 const newButton = button.cloneNode(true);
                 button.parentNode.replaceChild(newButton, button);
-                
+
                 if (lang === 'ms') {
                     newButton.style.display = 'block';
                     newButton.addEventListener('click', function () {
@@ -145,7 +233,7 @@
                         const word = wordItem.dataset.word;
                         window.open(`https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${encodeURIComponent(word)}`, '_blank');
                     });
-                }else if (lang === 'zh') {
+                } else if (lang === 'zh') {
                     newButton.style.display = 'none';
                 }
             });
@@ -157,7 +245,6 @@
                 zhDictionaryButtons.forEach(button => button.style.display = 'none');
                 dictionaryButtons.forEach(button => button.style.display = 'inline-block');
             }
-
         }
 
         document.getElementById('lang').addEventListener('change', function () {
@@ -174,14 +261,8 @@
             updateLanguage(initialLang);
         });
 
-        function toggleHide(button) {
-            const wordItem = button.closest('.word-item');
-            const wordSpan = wordItem.querySelector('.word');
-            wordSpan.classList.toggle('hidden');
-        }
-
         function playWord(word) {
-                fetch(`/play_word/${word}/${lang.value}`)
+            fetch(`/play_word/${word}/${lang.value}`)
                 .then(response => response.json())
                 .then(() => {
                     const audio = new Audio(`static/audio/${word}_${lang.value}.mp3`);
@@ -210,7 +291,7 @@
         });
 
         document.getElementById('retryButton').addEventListener('click', function () {
-            location.reload();
+            window.location.href = '/dict.html';
         });
     </script>
 </body>
