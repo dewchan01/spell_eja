@@ -183,8 +183,8 @@
             <canvas id="signature-pad"></canvas>
             <br>
             <div class="button-container">
-                <button id="clear-button"><i class="fa-solid fa-trash-can"> Clear 清楚</i></button>
-                <button id="save-button"><i class="fa-solid fa-floppy-disk"> Save 保存</i></button>
+                <button id="clear-button"><i class="fa-solid fa-trash-can"> Clear </i></button>
+                <button id="save-button"><i class="fa-solid fa-floppy-disk"> Save </i></button>
             </div>
             <script>
                 const canvas = document.getElementById('signature-pad');
@@ -206,12 +206,12 @@
                 function startDrawing(e) {
                     isDrawing = true;
                     ctx.beginPath();
-                    ctx.moveTo(e.offsetX, e.offsetY);
+                    ctx.moveTo(e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY);
                 }
         
                 function draw(e) {
                     if (!isDrawing) return;
-                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.lineTo(e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY);
                     ctx.stroke();
                 }
         
@@ -229,6 +229,7 @@
                 canvas.addEventListener('touchstart', (e) => startDrawing(e.touches[0]));
                 canvas.addEventListener('touchmove', (e) => draw(e.touches[0]));
                 canvas.addEventListener('touchend', stopDrawing);
+                canvas.addEventListener('touchcancel', stopDrawing);
         
                 clearButton.addEventListener('click', () => {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -240,7 +241,6 @@
                     alert('Signature saved!');
                 });
             </script>
-        </div>
         <div class="button-container" id="buttonContainer">
             <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right"> Retry 重试 </i></button>
             <button class="done-button" id="doneButton" onclick="window.location.href='/dictation_page.html'"><i
