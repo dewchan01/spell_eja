@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,59 +18,79 @@
             margin: 0;
             background-color: #f4f4f4;
         }
+
         .header {
-            margin-top: 30vh;
+            margin-top: 40vh;
             text-align: center;
         }
+
         .container {
             display: flex;
-            flex-direction: column; /* Align items vertically */
+            flex-direction: column;
+            /* Align items vertically */
             align-items: center;
             position: relative;
-            border: 4px solid #007bff; /* Thicker blue border for the container */
-            border-radius: 10px; /* Rounded corners */
-            padding: 20px; /* Padding around the content */
-            background-color: white; /* Background color for better contrast */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for a lifted effect */
+            border: 4px solid #007bff;
+            /* Thicker blue border for the container */
+            border-radius: 10px;
+            /* Rounded corners */
+            padding: 20px;
+            /* Padding around the content */
+            background-color: white;
+            /* Background color for better contrast */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            /* Subtle shadow for a lifted effect */
         }
+
         .controls {
             display: flex;
             align-items: center;
-            margin-bottom: 30px; /* Space above the retry button */
+            margin-bottom: 30px;
+            /* Space above the retry button */
         }
+
         .arrow {
             font-size: 2rem;
             cursor: pointer;
             user-select: none;
-            border-radius: 5px; /* Rounded corners for arrows */
-            margin: 0 10px; /* Space between arrows and board */
-            background-color: white; /* Match button background */
+            border-radius: 5px;
+            /* Rounded corners for arrows */
+            margin: 0 10px;
+            /* Space between arrows and board */
+            background-color: white;
+            /* Match button background */
         }
+
         .board-container {
             width: 110px;
             overflow: hidden;
             position: relative;
             margin: 0 20px;
         }
+
         .button-container {
             display: flex;
             justify-content: center;
             margin-top: 5vh;
         }
+
         .button-container button {
             margin: 0 5px;
         }
+
         .board {
             display: flex;
             transition: transform 0.5s ease-in-out;
         }
+
         .sound-button {
             padding: 10px 20px;
             font-size: 1.9rem;
             cursor: pointer;
             background-color: #007bff;
             color: white;
-            border: 2px solid #0056b3; /* Darker border for buttons */
+            border: 2px solid #0056b3;
+            /* Darker border for buttons */
             border-radius: 5px;
             min-width: 100px;
             display: flex;
@@ -78,21 +99,26 @@
             flex-shrink: 0;
             margin: 0 5px;
         }
-        .retry-button, .done-button {
-            visibility: hidden; /* Initially hidden */
+
+        .retry-button,
+        .done-button
+         {
+            visibility: hidden;
+            /* Initially hidden */
             padding: 10px 20px;
             font-size: 1.2rem;
             cursor: pointer;
             background-color: #28a745;
             color: white;
-            border: 2px solid #1e7e34; /* Darker border for retry/done buttons */
+            border: 2px solid #1e7e34;
+            /* Darker border for retry/done buttons */
             border-radius: 5px;
             margin-top: 10px;
         }
 
-        .retry-button{
+        .retry-button {
             background-color: red;
-            border : 2px solid #750000;
+            border: 2px solid #750000;
         }
 
         .exit-button {
@@ -101,14 +127,48 @@
             cursor: pointer;
             background-color: #dca735;
             color: white;
-            border: 2px solid #ff9204; /* Darker border for retry/done buttons */
+            border: 2px solid #ff9204;
+            /* Darker border for retry/done buttons */
             border-radius: 5px;
+        }
+
+        #signature-pad {
+            border: 1px solid #000;
+            background-color: #fff;
+            display: block;
+            margin: 0 auto;
+            touch-action: none; /* Prevent scrolling while drawing */
+        }
+        #save-button, #clear-button {
+            padding: 5px 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            border: 2px solid #1e7e34;
+            /* Darker border for retry/done buttons */
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        #clear-button {
+            border: 2px solid #750000;
+            background-color: #f71919;
+            color: #fff;
+        }
+
+
+        .signature-pad-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
     </style>
 </head>
+
 <body>
     <div class="header">
-        <h2>Press<i class="fa-solid fa-play"></i> to play each word!</h2><h2>点击<i class="fa-solid fa-play"></i> 播放每个单词</h2>
+        <h2>Press<i class="fa-solid fa-play"></i> to play each word!</h2>
+        <h2>点击<i class="fa-solid fa-play"></i> 播放每个单词</h2>
     </div>
     <div class="container">
         <div class="controls">
@@ -118,24 +178,88 @@
             </div>
             <div class="arrow" id="rightArrow"><i class="fa-solid fa-arrow-right"></i></div>
         </div>
+        <div class="signature-pad-container">
+            <h1><i>Write</i></h1>
+            <canvas id="signature-pad"></canvas>
+            <br>
+            <div class="button-container">
+                <button id="clear-button"><i class="fa-solid fa-trash-can"> Clear 清楚</i></button>
+                <button id="save-button"><i class="fa-solid fa-floppy-disk"> Save 保存</i></button>
+            </div>
+            <script>
+                const canvas = document.getElementById('signature-pad');
+                const ctx = canvas.getContext('2d');
+                const clearButton = document.getElementById('clear-button');
+                const saveButton = document.getElementById('save-button');
+        
+                function resizeCanvas() {
+                    canvas.width = window.innerWidth * 0.5; 
+                    canvas.height = window.innerHeight * 0.08;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height); 
+                }
+        
+                resizeCanvas(); 
+                window.addEventListener('resize', resizeCanvas); 
+        
+                let isDrawing = false;
+        
+                function startDrawing(e) {
+                    isDrawing = true;
+                    ctx.beginPath();
+                    ctx.moveTo(e.offsetX, e.offsetY);
+                }
+        
+                function draw(e) {
+                    if (!isDrawing) return;
+                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.stroke();
+                }
+        
+                function stopDrawing() {
+                    isDrawing = false;
+                    ctx.closePath();
+                }
+        
+                canvas.addEventListener('mousedown', startDrawing);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseout', stopDrawing);
+        
+                // For touch devices
+                canvas.addEventListener('touchstart', (e) => startDrawing(e.touches[0]));
+                canvas.addEventListener('touchmove', (e) => draw(e.touches[0]));
+                canvas.addEventListener('touchend', stopDrawing);
+        
+                clearButton.addEventListener('click', () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                });
+        
+                saveButton.addEventListener('click', () => {
+                    const dataURL = canvas.toDataURL('image/png');
+                    localStorage.setItem('signature', dataURL);
+                    alert('Signature saved!');
+                });
+            </script>
+        </div>
         <div class="button-container" id="buttonContainer">
-            <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right"> Retry </i></button>
-            <button class="done-button" id="doneButton" onclick="window.location.href='/dictation_page.html'"><i class="fa-solid fa-check"> Done </i></button>
+            <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right"> Retry 重试 </i></button>
+            <button class="done-button" id="doneButton" onclick="window.location.href='/dictation_page.html'"><i
+                    class="fa-solid fa-check"> Done 完成</i></button>
         </div>
     </div>
     <div class="button-container" id="buttonContainer">
         <button class="exit-button" id="exitButton"><i class="fa-solid fa-right-from-bracket"> Exit 离开</i></button>
     </div>
-    
-    
+
+
     <script>
         // Retrieve the stored form data
         const dictationData = JSON.parse(localStorage.getItem('dictationForm'));
-    
+
         // // Get the words and language from the form data
         const words = dictationData.words.trim().split(/\n/); // Assuming words are space-separated
         const lang = dictationData.lang;
-    
+
         // Get the board element
         const board = document.getElementById('board');
         const leftArrow = document.getElementById('leftArrow');
@@ -143,18 +267,18 @@
         const retryButton = document.getElementById('retryButton');
         const doneButton = document.getElementById('doneButton');
         const exitButton = document.getElementById('exitButton');
-    
+
         // Function to create a button for each word
         function createWordButton(word) {
             const button = document.createElement('button');
             button.className = 'sound-button';
             button.innerHTML = '<i class="fa-solid fa-play"></i>'; // Keep text same for all buttons
             button.addEventListener('click', () => {
-               playWord(word);
+                playWord(word);
             });
             return button;
         }
-    
+
         function playWord(word) {
             const dictationData = JSON.parse(localStorage.getItem('dictationForm'));
             const lang = dictationData.lang;
@@ -174,10 +298,10 @@
             const wordButton = createWordButton(word);
             board.appendChild(wordButton);
         });
-    
+
         // Initialize the current word index
         let currentIndex = 0;
-    
+
         // Update the board position
         function updateBoard() {
             const translateX = -currentIndex * 110; // Adjust based on button width + margin
@@ -188,7 +312,7 @@
             retryButton.style.visibility = currentIndex === words.length - 1 ? 'visible' : 'hidden';
             doneButton.style.visibility = currentIndex === words.length - 1 ? 'visible' : 'hidden';
         }
-    
+
         // Add event listeners to arrows
         leftArrow.addEventListener('click', () => {
             if (currentIndex > 0) {
@@ -196,25 +320,26 @@
                 updateBoard();
             }
         });
-    
+
         rightArrow.addEventListener('click', () => {
             if (currentIndex < words.length - 1) {
                 currentIndex++;
                 updateBoard();
             }
         });
-    
+
         retryButton.addEventListener('click', () => {
             currentIndex = 0; // Reset to the first item
             updateBoard();
         });
-        
+
         exitButton.addEventListener('click', () => {
             window.location.href = '/dictation_page.html';
         });
         // Initial board update
         updateBoard();
     </script>
-    
+
 </body>
+
 </html>
