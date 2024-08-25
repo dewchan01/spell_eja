@@ -19,6 +19,7 @@
         }
         .header {
             margin-bottom: 6vh;
+            text-align: center;
         }
         .container {
             display: flex;
@@ -53,6 +54,7 @@
         .button-container {
             display: flex;
             justify-content: center;
+            margin-top: 5vh;
         }
         .button-container button {
             margin: 0 5px;
@@ -87,11 +89,26 @@
             border-radius: 5px;
             margin-top: 10px;
         }
+
+        .retry-button{
+            background-color: red;
+            border : 2px solid #750000;
+        }
+
+        .exit-button {
+            padding: 5px 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background-color: #dca735;
+            color: white;
+            border: 2px solid #ff9204; /* Darker border for retry/done buttons */
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h2>Press<i class="fa-solid fa-play"></i> to play each word!</h2>
+        <h2>Press<i class="fa-solid fa-play"></i> to play each word!</h2><h2>点击<i class="fa-solid fa-play"></i> 播放每个单词</h2>
     </div>
     <div class="container">
         <div class="controls">
@@ -103,9 +120,13 @@
         </div>
         <div class="button-container" id="buttonContainer">
             <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right"> Retry </i></button>
-            <button class="done-button" id="doneButton" onclick="window.location.href='/dictation_page.html'"><i class="fa-solid fa-check fa-beat"> Done </i></button>
+            <button class="done-button" id="doneButton" onclick="window.location.href='/dictation_page.html'"><i class="fa-solid fa-check"> Done </i></button>
         </div>
     </div>
+    <div class="button-container" id="buttonContainer">
+        <button class="exit-button" id="exitButton"><i class="fa-solid fa-right-from-bracket"> Exit 离开</i></button>
+    </div>
+    
     
     <script>
         // Retrieve the stored form data
@@ -121,6 +142,7 @@
         const rightArrow = document.getElementById('rightArrow');
         const retryButton = document.getElementById('retryButton');
         const doneButton = document.getElementById('doneButton');
+        const exitButton = document.getElementById('exitButton');
     
         // Function to create a button for each word
         function createWordButton(word) {
@@ -186,7 +208,10 @@
             currentIndex = 0; // Reset to the first item
             updateBoard();
         });
-    
+        
+        exitButton.addEventListener('click', () => {
+            window.location.href = '/dictation_page.html';
+        });
         // Initial board update
         updateBoard();
     </script>

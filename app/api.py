@@ -22,7 +22,7 @@ def submit_words_route():
     words_list = request.form['words'].split('\n')
     language = request.form['lang']
     submit_words(words_list, language)
-    return redirect(url_for('dict'))
+    return redirect(url_for('dictation_page'))
 
 @app.route('/dictation_page.html')
 def dictation_page():
