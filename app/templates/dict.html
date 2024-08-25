@@ -101,8 +101,7 @@
         }
 
         .retry-button,
-        .done-button
-         {
+        .done-button {
             visibility: hidden;
             /* Initially hidden */
             padding: 10px 20px;
@@ -132,24 +131,39 @@
             border-radius: 5px;
         }
 
-        #signature-pad {
-            border: 1px solid #000;
-            background-color: #fff;
-            display: block;
+        .signature-pad-container {
+            width: 80%;
+            max-width: 400px;
+            /* Reduced from 600px */
             margin: 0 auto;
-            touch-action: none; /* Prevent scrolling while drawing */
         }
-        #save-button, #clear-button {
+
+        .canvas-container {
+            width: 100%;
+            height: 150px;
+            /* Reduced from 200px */
+            border: 1px solid #000;
+            touch-action: none;
+        }
+
+        #signature-pad {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        #save-button,
+        #clear-button {
             padding: 5px 10px;
             font-size: 1rem;
             cursor: pointer;
             background-color: #28a745;
             color: white;
             border: 2px solid #1e7e34;
-            /* Darker border for retry/done buttons */
             border-radius: 5px;
             margin-top: 10px;
         }
+
         #clear-button {
             border: 2px solid #750000;
             background-color: #f71919;
@@ -178,74 +192,110 @@
             </div>
             <div class="arrow" id="rightArrow"><i class="fa-solid fa-arrow-right"></i></div>
         </div>
+        <!-- Signature Pad -->
         <div class="signature-pad-container">
             <h1><i>Write</i></h1>
-            <canvas id="signature-pad"></canvas>
+            <div class="canvas-container">
+                <canvas id="signature-pad"></canvas>
+            </div>
             <br>
             <div class="button-container">
                 <button id="clear-button"><i class="fa-solid fa-trash-can"> Clear </i></button>
                 <button id="save-button"><i class="fa-solid fa-floppy-disk"> Save </i></button>
             </div>
-            <script>
-                const canvas = document.getElementById('signature-pad');
-                const ctx = canvas.getContext('2d');
-                const clearButton = document.getElementById('clear-button');
-                const saveButton = document.getElementById('save-button');
-        
-                function resizeCanvas() {
-                    canvas.width = window.innerWidth * 0.5; 
-                    canvas.height = window.innerHeight * 0.08;
-                    ctx.clearRect(0, 0, canvas.width, canvas.height); 
-                }
-        
-                resizeCanvas(); 
-                window.addEventListener('resize', resizeCanvas); 
-        
-                let isDrawing = false;
-        
-                function startDrawing(e) {
-                    isDrawing = true;
-                    ctx.beginPath();
-                    ctx.moveTo(e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY);
-                }
-        
-                function draw(e) {
-                    if (!isDrawing) return;
-                    ctx.lineTo(e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY);
-                    ctx.stroke();
-                }
-        
-                function stopDrawing() {
-                    isDrawing = false;
-                    ctx.closePath();
-                }
-        
+            <div class="button-container" id="buttonContainer">
+                <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right"> Retry 重试
+                    </i></button>
+                <button class="done-button" id="doneButton" onclick="window.location.href='/dictation_page.html'"><i
+                        class="fa-solid fa-check"> Done 完成</i></button>
+            </div>
+        </div>
+
+        <script>
+            const canvas = document.getElementById('signature-pad');
+            const ctx = canvas.getContext('2d');
+            const clearButton = document.getElementById('clear-button');
+            const saveButton = document.getElementById('save-button');
+
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+
+            function resizeCanvas() {
+                const rect = canvas.parentNode.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#000';
+            }
+
+            function getEventPosition(e) {
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches ? e.touches[0] : e;
+                return {
+                    x: touch.clientX - rect.left,
+                    y: touch.clientY - rect.top
+                };
+            }
+
+            function startDrawing(e) {
+                e.preventDefault();
+                isDrawing = true;
+                const { x, y } = getEventPosition(e);
+                lastX = x;
+                lastY = y;
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+
+                const { x, y } = getEventPosition(e);
+
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                [lastX, lastY] = [x, y];
+            }
+
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            function addEventListeners() {
+                // Mouse events
                 canvas.addEventListener('mousedown', startDrawing);
                 canvas.addEventListener('mousemove', draw);
                 canvas.addEventListener('mouseup', stopDrawing);
                 canvas.addEventListener('mouseout', stopDrawing);
-        
-                // For touch devices
-                canvas.addEventListener('touchstart', (e) => startDrawing(e.touches[0]));
-                canvas.addEventListener('touchmove', (e) => draw(e.touches[0]));
+
+                // Touch events
+                canvas.addEventListener('touchstart', startDrawing, { passive: false });
+                canvas.addEventListener('touchmove', draw, { passive: false });
                 canvas.addEventListener('touchend', stopDrawing);
                 canvas.addEventListener('touchcancel', stopDrawing);
-        
-                clearButton.addEventListener('click', () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                });
-        
-                saveButton.addEventListener('click', () => {
-                    const dataURL = canvas.toDataURL('image/png');
-                    localStorage.setItem('signature', dataURL);
-                    alert('Signature saved!');
-                });
-            </script>
-        <div class="button-container" id="buttonContainer">
-            <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right"> Retry 重试 </i></button>
-            <button class="done-button" id="doneButton" onclick="window.location.href='/dictation_page.html'"><i
-                    class="fa-solid fa-check"> Done 完成</i></button>
-        </div>
+            }
+
+            clearButton.addEventListener('click', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+
+            saveButton.addEventListener('click', () => {
+                const dataURL = canvas.toDataURL('image/png');
+                localStorage.setItem('signature', dataURL);
+                alert('Signature saved!');
+            });
+
+            // Initial setup
+            resizeCanvas();
+            addEventListeners();
+            window.addEventListener('resize', resizeCanvas);
+        </script>
+
+        <!-- End Signature Pad -->
     </div>
     <div class="button-container" id="buttonContainer">
         <button class="exit-button" id="exitButton"><i class="fa-solid fa-right-from-bracket"> Exit 离开</i></button>
