@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Dictation</title>
@@ -40,7 +41,7 @@
             justify-content: space-between;
             width: 100%;
         }
-        
+
         button {
             background-color: #20f719;
             color: rgb(56, 50, 50);
@@ -55,13 +56,12 @@
             background-color: #45a049;
         }
 
-        #footer{
-            display: flex; 
+        #footer {
+            display: flex;
             justify-content: center;
             align-items: flex-end;
             height: 5vh;
         }
-
     </style>
 </head>
 
@@ -98,28 +98,43 @@
 </body>
 <script>
     function submitWords(event) {
-        if (!event.target.words.value.trim().length) {
+        const words = event.target.words.value.trim();
+        const lang = event.target.lang.value;
+
+        if (!words.length) {
             alert('Please enter at least one word.');
             event.preventDefault();
             return;
         }
-        if (/^[a-zA-Z0-9]+$/.test(event.target.words.value.trim()) && event.target.lang.value === 'zh') {
+
+        // Check if the input contains English letters when the selected language is Chinese
+        if (/[a-zA-Z]/.test(words) && lang === 'zh') {
+            alert('Please choose only 中文 (Chinese) words.');
+            event.preventDefault();
+            return;
+        }
+
+        // Check if the input contains only Chinese characters when the selected language is Chinese
+        if (lang === 'zh' && !/^[\u4e00-\u9fff]+$/.test(words)) {
+            alert('Please choose only 中文 (Chinese) words.');
+            event.preventDefault();
+            return;
+        }
+
+        // Check if the selected language is Malay or English and if the input contains only allowed characters
+        if ((lang === 'ms' || lang === 'en') && !/^[a-zA-Z0-9'-\s]+$/.test(words)) {
             alert('Please choose only English or Malay words.');
             event.preventDefault();
             return;
         }
-        if ((event.target.lang.value === 'ms' || event.target.lang.value === 'en') && !/^[a-zA-Z0-9]+$/.test(event.target.words.value.trim())){
-                alert('Please choose 中文.');
-                event.preventDefault();
-                return;
-            }
-            
+
+
         localStorage.setItem('dictationForm', JSON.stringify(Object.fromEntries(new FormData(event.target).entries())));
     }
-    document.getElementById('dictationForm').addEventListener('reset', function() {
+        document.getElementById('dictationForm').addEventListener('reset', function () {
         localStorage.removeItem('dictationForm');
     })
 
 </script>
-</html>
 
+</html>
