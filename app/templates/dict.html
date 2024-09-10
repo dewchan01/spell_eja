@@ -203,7 +203,7 @@
             </div>
             <div class="button-container">
                 <button id="clear-button"><i class="fa-solid fa-trash-can"> Clear </i></button>
-                <button id="save-button"><i class="fa-solid fa-floppy-disk"> Save </i></button>
+                <!-- <button id="save-button"><i class="fa-solid fa-floppy-disk"> Save </i></button> -->
             </div>
             <div class="button-container" id="buttonContainer">
                 <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right"> Retry 重试
@@ -217,7 +217,7 @@
             const canvas = document.getElementById('signature-pad');
             const ctx = canvas.getContext('2d');
             const clearButton = document.getElementById('clear-button');
-            const saveButton = document.getElementById('save-button');
+            // const saveButton = document.getElementById('save-button');
 
             let isDrawing = false;
             let lastX = 0;
@@ -286,31 +286,69 @@
                 currentWord = '';
             });
 
-            const data = JSON.parse(localStorage.getItem('data') || '{}');
-            saveButton.addEventListener('click', () => {
-                const dataURL = canvas.toDataURL('image/png');
-                if (currentWord) {
-                    data[currentWord] = dataURL;
-                    localStorage.setItem('handwrittenData', JSON.stringify(data));
-                    alert(`Handwritting saved!`);
-                } else {
-                    alert('Please play a word before saving your handwritting.');
-                }
-            });
+            let data = JSON.parse(localStorage.getItem('handwrittenData'));
+            if (!data) {
+                data = {};
+                localStorage.setItem('handwrittenData', JSON.stringify(data));
+            }
+            // saveButton.addEventListener('click', () => {
+            //     const dataURL = canvas.toDataURL('image/png');
+                
+            //     if (!data[words[currentIndex]]) {
+            //         data[words[currentIndex]] = dataURL;
+            //         localStorage.setItem('handwrittenData', JSON.stringify(data));
+            //     }
+            //     else{
+            //         overwrite = confirm('Word already exists! Do you want to overwrite it?');
+            //         if (!overwrite) {
+            //             return;
+            //         }else{
+            //             data[words[currentIndex]] = dataURL;
+            //             localStorage.setItem('handwrittenData', JSON.stringify(data));
+            //         }
+            //     }
+            //     document.getElementById('rightArrow').click();
+            //     ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //     currentWord = '';
+            // });
 
             rightArrow.addEventListener('click', () => {
+                const dataURL = canvas.toDataURL('image/png');
                 const data = JSON.parse(localStorage.getItem('handwrittenData'));
-                if (!Object.keys(data).includes(currentWord)) {
-                    alert('You have not save your handwritting.');
+                if (!data[words[currentIndex]]) {
+                    data[words[currentIndex]] = dataURL;
+                    localStorage.setItem('handwrittenData', JSON.stringify(data));
+                }
+                else{
+                    overwrite = confirm('Word already exists! Do you want to overwrite it?');
+                    if (!overwrite) {
+                        return;
+                    }else{
+                        data[words[currentIndex]] = dataURL;
+                        localStorage.setItem('handwrittenData', JSON.stringify(data));
+                    }
                 }
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 currentWord = '';
             })
 
             leftArrow.addEventListener('click', () => {
+                const dataURL = canvas.toDataURL('image/png');
                 const data = JSON.parse(localStorage.getItem('handwrittenData'));
-                if (!Object.keys(data).includes(currentWord)) {
-                    alert('You have not save your handwritting.');
+                if(!data){
+                    localStorage.setItem('handwrittenData', '{}');
+                }
+                if (!data[words[currentIndex]]) {
+                    data[words[currentIndex]] = dataURL;
+                    localStorage.setItem('handwrittenData', JSON.stringify(data));
+                }
+                else{
+                    overwrite = confirm('Word already exists! Do you want to overwrite it?');
+                    if (!overwrite) {
+                        return;
+                    }else{
+                        data[words[currentIndex]] = dataURL;
+                    }
                 }
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 currentWord = '';
@@ -381,6 +419,7 @@
 
         // Update the board position
         function updateBoard() {
+            document.getElementsByClassName('sound-button')[currentIndex].click();
             const translateX = -currentIndex * 110; // Adjust based on button width + margin
             board.style.transform = `translateX(${translateX}px)`;
             // Check if arrows should be shown or hidden
@@ -411,6 +450,11 @@
         });
 
         exitButton.addEventListener('click', () => {
+            window.location.href = '/dictation_page.html';
+        });
+
+        doneButton.addEventListener('click', () => {
+            rightArrow.click();
             window.location.href = '/dictation_page.html';
         });
         // Initial board update
