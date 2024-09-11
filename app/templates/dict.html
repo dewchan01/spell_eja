@@ -27,26 +27,19 @@
         .container {
             display: flex;
             flex-direction: column;
-            /* Align items vertically */
             align-items: center;
             position: relative;
             border: 4px solid #007bff;
-            /* Thicker blue border for the container */
             border-radius: 10px;
-            /* Rounded corners */
-            padding: 20px;
-            /* Padding around the content */
+            padding: 10px;
             background-color: white;
-            /* Background color for better contrast */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            /* Subtle shadow for a lifted effect */
         }
 
         .controls {
             display: flex;
             align-items: center;
-            margin-bottom: 30px;
-            /* Space above the retry button */
+            margin-bottom: 10px;
         }
 
         .arrow {
@@ -54,11 +47,8 @@
             cursor: pointer;
             user-select: none;
             border-radius: 5px;
-            /* Rounded corners for arrows */
             margin: 0 10px;
-            /* Space between arrows and board */
             background-color: white;
-            /* Match button background */
         }
 
         .board-container {
@@ -71,7 +61,7 @@
         .button-container {
             display: flex;
             justify-content: center;
-            margin-top: 5vh;
+            margin-top: 1vh;
         }
 
         .button-container button {
@@ -90,7 +80,6 @@
             background-color: #007bff;
             color: white;
             border: 2px solid #0056b3;
-            /* Darker border for buttons */
             border-radius: 5px;
             min-width: 100px;
             display: flex;
@@ -103,14 +92,12 @@
         .retry-button,
         .done-button {
             visibility: hidden;
-            /* Initially hidden */
             padding: 10px 20px;
             font-size: 1.2rem;
             cursor: pointer;
             background-color: #28a745;
             color: white;
             border: 2px solid #1e7e34;
-            /* Darker border for retry/done buttons */
             border-radius: 5px;
             margin-top: 10px;
         }
@@ -127,21 +114,19 @@
             background-color: #dca735;
             color: white;
             border: 2px solid #ff9204;
-            /* Darker border for retry/done buttons */
             border-radius: 5px;
         }
 
         .signature-pad-container {
             width: 98%;
             max-width: 400px;
-            /* Reduced from 600px */
             margin: 0 auto;
         }
 
         .canvas-container {
+            position: relative;
             width: 100%;
-            height: 150px;
-            /* Reduced from 200px */
+            height: 270px;
             border: 1px solid #000;
             touch-action: none;
         }
@@ -152,24 +137,17 @@
             touch-action: none;
         }
 
-        #save-button,
         #clear-button {
-            padding: 5px 10px;
-            font-size: 1rem;
+            position: absolute;
+            top: 0px;
+            right: 5px;
+            font-size: 1.5rem;
             cursor: pointer;
-            background-color: #28a745;
-            color: white;
-            border: 2px solid #1e7e34;
-            border-radius: 5px;
             margin-top: 10px;
+            border: none;
+            color: #f07a7a;
+            background-color: white;
         }
-
-        #clear-button {
-            border: 2px solid #750000;
-            background-color: #f71919;
-            color: #fff;
-        }
-
 
         .signature-pad-container {
             display: flex;
@@ -200,16 +178,13 @@
             <!-- <h1><i>Write & Save</i></h1> -->
             <div class="canvas-container">
                 <canvas id="signature-pad"></canvas>
+                <button id="clear-button"><i class="fa-solid fa-circle-xmark"></i></button>
             </div>
-            <div class="button-container">
-                <button id="clear-button"><i class="fa-solid fa-trash-can"> Clear </i></button>
-                <!-- <button id="save-button"><i class="fa-solid fa-floppy-disk"> Save </i></button> -->
-            </div>
+
             <div class="button-container" id="buttonContainer">
-                <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right"> Retry 重试
-                    </i></button>
+                <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right"> Retry<br />重试</i></button>
                 <button class="done-button" id="doneButton" onclick="window.location.href='/dictation_page.html'"><i
-                        class="fa-solid fa-check"> Done 完成</i></button>
+                        class="fa-solid fa-check"> Done<br />完成</i></button>
             </div>
         </div>
 
@@ -293,7 +268,7 @@
             }
             // saveButton.addEventListener('click', () => {
             //     const dataURL = canvas.toDataURL('image/png');
-                
+
             //     if (!data[words[currentIndex]]) {
             //         data[words[currentIndex]] = dataURL;
             //         localStorage.setItem('handwrittenData', JSON.stringify(data));
@@ -318,7 +293,7 @@
                 if (!data[words[currentIndex]]) {
                     data[words[currentIndex]] = dataURL;
                 }
-                else{
+                else {
                     overwrite = confirm('Do you want to overwrite it?\n确定要更改？');
                     if (!overwrite) {
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -334,13 +309,13 @@
             leftArrow.addEventListener('click', () => {
                 const dataURL = canvas.toDataURL('image/png');
                 const data = JSON.parse(localStorage.getItem('handwrittenData'));
-                if(!data){
+                if (!data) {
                     localStorage.setItem('handwrittenData', '{}');
                 }
                 if (!data[words[currentIndex]]) {
                     data[words[currentIndex]] = dataURL;
                 }
-                else{
+                else {
                     overwrite = confirm('Do you want to overwrite it?\n确定要更改？');
                     if (!overwrite) {
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
