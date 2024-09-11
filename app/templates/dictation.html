@@ -84,7 +84,7 @@
             align-items: center;
             justify-content: space-between;
             justify-content: center;
-            font-size: 45px;
+            font-size: 42px;
             gap: 60px;
         }
 
@@ -96,6 +96,11 @@
         #retryButton {
             background-color: #3a19f7;
             color: #f5f5f5;
+        }
+
+        #startButton {
+            background-color: #fa8500;
+            color: #ffffff;
         }
 
         /* Styles for the modal */
@@ -154,7 +159,8 @@
 
 <body>
     <div id="buttons">
-        <button id="retryButton"><i class="fa-solid fa-hourglass-start"> Start<br />开始听写</i></button>
+        <button id="retryButton"><i class="fa-solid fa-random"> Random<br />随机听写</i></button>
+        <button id="startButton"><i class="fa-solid fa-hourglass-start"> Start<br />开始听写</i></button>
         <button id="reinputButton" onclick="exitPage()"><i class="fa-solid fa-check"> Done<br />完成听写</i></button>
     </div>
     <div id="wordsContainer">
@@ -333,6 +339,12 @@
         }
 
         document.getElementById('retryButton').addEventListener('click', function () {
+            localStorage.setItem('random', 'true');
+            window.location.href = '/dict.html';
+        });
+
+        document.getElementById('startButton').addEventListener('click', function () {
+            localStorage.setItem('random', 'false');
             window.location.href = '/dict.html';
         });
     </script>

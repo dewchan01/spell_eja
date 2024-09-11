@@ -182,7 +182,8 @@
             </div>
 
             <div class="button-container" id="buttonContainer">
-                <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right"> Retry<br />重试</i></button>
+                <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right">
+                        Retry<br />重试</i></button>
                 <button class="done-button" id="doneButton" onclick="window.location.href='/dictation_page.html'"><i
                         class="fa-solid fa-check"> Done<br />完成</i></button>
             </div>
@@ -345,9 +346,19 @@
         // Retrieve the stored form data
         const dictationData = JSON.parse(localStorage.getItem('dictationForm'));
 
-        // // Get the words and language from the form data
+        // Get the words and language from the form data
         const words = dictationData.words.trim().split(/\n/); // Assuming words are space-separated
         const lang = dictationData.lang;
+
+        // Randomize the order of the words
+        if (localStorage.getItem('random') === 'true') {
+            for (let i = words.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const temp = words[i];
+                words[i] = words[j];
+                words[j] = temp;
+            }
+        }
 
         // Get the board element
         const board = document.getElementById('board');
@@ -383,6 +394,7 @@
                 });
         }
         // Create and append buttons for all words
+
         words.forEach(word => {
             const wordButton = createWordButton(word);
             board.appendChild(wordButton);
