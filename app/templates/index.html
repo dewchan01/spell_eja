@@ -151,7 +151,14 @@
         const lang = event.target.lang.value;
 
         if (!words.length) {
-            alert('Please enter at least one word.');
+            alert('Please enter at least one word\n请输入至少一个单词');
+            event.preventDefault();
+            return;
+        }
+
+        const wordSet = new Set(words.trim().split(/\n/));
+        if (wordSet.size !== words.trim().split(/\n/).length) {
+            alert('Duplicate words found.\n找到重复的单词');
             event.preventDefault();
             return;
         }
