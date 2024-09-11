@@ -225,8 +225,8 @@
             const modal = document.getElementById('myModal');
             const modalBody = document.getElementById('modal-body');
             const modalTitle = document.querySelector('.modal h1');
-            modalBody.innerHTML = ''; // Clear previous content
-            modalTitle.textContent = `Handwriting for "${word}"`;
+            modalBody.innerHTML = ''; 
+            modalTitle.textContent = `${word}`;
 
             const data = JSON.parse(localStorage.getItem('handwrittenData') || '{}');
             if (data[word]) {
