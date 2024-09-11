@@ -158,14 +158,14 @@
 
         // Check if the input contains English letters when the selected language is Chinese
         if (/[a-zA-Z]/.test(words) && lang === 'zh') {
-            alert('Please choose English or Bahasa Malaysia');
+            alert('Please choose English or Bahasa Malaysia\n请选择英语或马来语');
             event.preventDefault();
             return;
         }
 
         // Check if the selected language is Malay or English and if the input contains only allowed characters
         if ((lang === 'ms' || lang === 'en') && !/^[a-zA-Z0-9'-\s]+$/.test(words)) {
-            alert('Please enter valid characters');
+            alert('Please choose right language or enter valid characters\n请输入正确的语言或有效字符');
             event.preventDefault();
             return;
         }

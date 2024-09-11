@@ -317,17 +317,16 @@
                 const data = JSON.parse(localStorage.getItem('handwrittenData'));
                 if (!data[words[currentIndex]]) {
                     data[words[currentIndex]] = dataURL;
-                    localStorage.setItem('handwrittenData', JSON.stringify(data));
                 }
                 else{
-                    overwrite = confirm('Word already exists! Do you want to overwrite it?');
+                    overwrite = confirm('Do you want to overwrite it?\n确定要更改？');
                     if (!overwrite) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
                         return;
-                    }else{
-                        data[words[currentIndex]] = dataURL;
-                        localStorage.setItem('handwrittenData', JSON.stringify(data));
                     }
+                    data[words[currentIndex]] = dataURL;
                 }
+                localStorage.setItem('handwrittenData', JSON.stringify(data));
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 currentWord = '';
             })
@@ -340,16 +339,16 @@
                 }
                 if (!data[words[currentIndex]]) {
                     data[words[currentIndex]] = dataURL;
-                    localStorage.setItem('handwrittenData', JSON.stringify(data));
                 }
                 else{
-                    overwrite = confirm('Word already exists! Do you want to overwrite it?');
+                    overwrite = confirm('Do you want to overwrite it?\n确定要更改？');
                     if (!overwrite) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
                         return;
-                    }else{
-                        data[words[currentIndex]] = dataURL;
                     }
+                    data[words[currentIndex]] = dataURL;
                 }
+                localStorage.setItem('handwrittenData', JSON.stringify(data));
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 currentWord = '';
             })
