@@ -443,6 +443,29 @@
             rightArrow.click();
             window.location.href = '/dictation_page.html';
         });
+
+        exitButton.addEventListener('click', () => {
+                const dataURL = canvas.toDataURL('image/png');
+                const data = JSON.parse(localStorage.getItem('handwrittenData'));
+                if (!data) {
+                    localStorage.setItem('handwrittenData', '{}');
+                }
+                if (!data[words[currentIndex]]) {
+                    data[words[currentIndex]] = dataURL;
+                }
+                else {
+                    overwrite = confirm('Do you want to overwrite it?\n确定要更改？');
+                    if (!overwrite) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        return;
+                    }
+                    data[words[currentIndex]] = dataURL;
+                }
+                localStorage.setItem('handwrittenData', JSON.stringify(data));
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                currentWord = '';
+            })
+            
         // Initial board update
         updateBoard();
     </script>
