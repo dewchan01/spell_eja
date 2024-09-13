@@ -19,7 +19,8 @@ def submit_words(words_list, language):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # return render_template('index.html')
+    return redirect('https://spelleja-latest.onrender.com/')
 
 @app.route('/submit_words', methods=['POST'])
 def submit_words_route():
