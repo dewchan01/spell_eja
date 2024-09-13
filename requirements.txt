@@ -3,3 +3,6 @@ requests
 gtts
 Gunicorn
 pypinyin
+PIL
+pytesseract
+opencv-python
