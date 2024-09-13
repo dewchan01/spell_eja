@@ -27,6 +27,12 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
+        #options {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
         textarea {
             font-size: 36px;
             padding: 10px;
@@ -34,12 +40,11 @@
             resize: none;
             border: 2px solid #000000;
             border-radius: 5px;
+            position: relative;
         }
-
         select {
             font-size: 36px;
             padding: 5px;
-            margin-bottom: 10px;
             border: 2px solid #000000;
             border-radius: 5px;
         }
@@ -77,9 +82,19 @@
             color: #f5f5f5;
         }
 
-        #resetButton{
+        #resetButton {
             background-color: #f71919;
             color: #f5f5f5;
+        }
+
+        #ocrButton {
+            background-color: #fab965;
+            color: rgb(56, 50, 50);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 2rem;
         }
 
         #footer {
@@ -96,8 +111,8 @@
     <div id="historyContainer">
         <i class="fa-solid fa-clock-rotate-left"></i>
         <select id="history">
-        <option value="" disabled selected>History 搜寻历史 </option>
-    </select>
+            <option value="" disabled selected>History 搜寻历史 </option>
+        </select>
     </div>
     <script>
         const historySelect = document.getElementById('history');
@@ -118,17 +133,47 @@
     </script>
     <form id="dictationForm" method="POST" action="/submit_words" onsubmit="submitWords(event)">
         <textarea name="words" id="words" cols="30" rows="10" placeholder="spelling&#10;ejaan&#10;听写"></textarea>
-        <select name="lang" id="lang">
-            <option value="en">English</option>
-            <option value="zh">中文</option>
-            <option value="ms">Bahasa Malaysia</option>
-        </select>
+        <div id="options">
+            <select name="lang" id="lang">
+                <option value="en">English</option>
+                <option value="zh">中文</option>
+                <option value="ms">Bahasa Malaysia</option>
+            </select>
+            <input type="file" id="image" accept="image/*" style="display: none;">
+            <button id="ocrButton" type="button"><i class="fa-solid fa-file-image"></i></button>
+        </div>
         <div id="buttons">
             <button type="submit" id="startButton"><i class="fa-solid fa-hourglass-start"> Start 开始</i></button>
             <button type="reset" id="resetButton"><i class="fa-solid fa-trash"> Reset 重置</i></button>
         </div>
     </form>
     <script>
+        document.getElementById('ocrButton').onclick = function () {
+            document.getElementById('image').click();
+        };
+
+        document.getElementById('image').onchange = async function () {
+            const formData = new FormData();
+            formData.append('image', this.files[0]);
+
+            try {
+                const response = await fetch('/ocr', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.text) {
+                    document.getElementById('words').value = result.text;
+                } else {
+                    alert('Error: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error processing the OCR request.');
+                console.error('Error:', error);
+            }
+        };
+
         const storedData = localStorage.getItem('dictationForm');
         if (storedData) {
             const data = JSON.parse(storedData);
@@ -184,7 +229,7 @@
         localStorage.setItem('history', JSON.stringify(newHistory));
     }
 
-        document.getElementById('dictationForm').addEventListener('reset', function () {
+    document.getElementById('dictationForm').addEventListener('reset', function () {
         localStorage.removeItem('dictationForm');
     })
 

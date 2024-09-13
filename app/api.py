@@ -2,7 +2,11 @@ from flask import jsonify, render_template, request, redirect, url_for
 from pypinyin import Style, pinyin
 from app import app
 from gtts import gTTS
+from PIL import Image
+
 import os
+import cv2
+import pytesseract
 
 words = []
 lang = None
@@ -61,5 +65,20 @@ def convert_pinyin():
     data = request.args.get('data')
     pinyin_result = pinyin(data)
     pinyin_text = ' '.join([''.join(item) for item in pinyin_result])
-
     return jsonify({'pinyin': pinyin_text})
+
+@app.route('/ocr', methods=['POST'])
+def ocr_api():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image file provided\n没有提供图像文件'}), 400
+
+    image_file = request.files['image']
+    image_path = './app/static/images/uploaded_image.jpg'
+    image_file.save(image_path)
+    image = cv2.imread(image_path)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)    
+    text = pytesseract.image_to_string(Image.fromarray(gray), lang='chi_sim')
+    os.remove(image_path)
+    
+    return jsonify({'text': text})
+
