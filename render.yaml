@@ -2,8 +2,7 @@ services:
   - type: web # A Python web service named flask-app running on a free instance
     plan: free
     name: spell_eja
-    runtime: python
+    runtime: docker
     repo: https://github.com/dewchan01/spell_eja
-    branch: main
-    buildCommand: "su root && apt-get update && apt-get install tesseract-ocr tesseract-ocr-chi-sim -y && pip install -r requirements.txt"
-    startCommand: "gunicorn app:app"
+    dockerfilePath: Dockerfile
+    
