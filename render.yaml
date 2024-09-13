@@ -1,8 +1,0 @@
-services:
-  - type: web # A Python web service named flask-app running on a free instance
-    plan: free
-    name: spell_eja
-    runtime: docker
-    repo: https://github.com/dewchan01/spell_eja
-    dockerfilePath: Dockerfile
-    
