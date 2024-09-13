@@ -5,5 +5,5 @@ services:
     runtime: python
     repo: https://github.com/dewchan01/spell_eja
     branch: main
-    buildCommand: "apt-get install sudo -y && sudo apt-get install tesseract-ocr tesseract-ocr-chi-sim -y && pip install -r requirements.txt"
+    buildCommand: "su root && apt-get update && apt-get install tesseract-ocr tesseract-ocr-chi-sim -y && pip install -r requirements.txt"
     startCommand: "gunicorn app:app"
