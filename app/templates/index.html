@@ -33,6 +33,7 @@
             width: 100%;
             margin-bottom: 10px;
         }
+
         textarea {
             font-size: 36px;
             padding: 10px;
@@ -42,6 +43,7 @@
             border-radius: 5px;
             position: relative;
         }
+
         select {
             font-size: 36px;
             padding: 5px;
@@ -103,6 +105,25 @@
             align-items: flex-end;
             height: 5vh;
         }
+        
+        #spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000; /* Ensures the overlay is on top */
+        }
+
+        .spinner {
+            font-size: 100px;
+            color: #ffffff;
+        }
+
     </style>
 </head>
 
@@ -147,6 +168,11 @@
             <button type="reset" id="resetButton"><i class="fa-solid fa-trash"> Reset 重置</i></button>
         </div>
     </form>
+    <div id="spinner-overlay" style="display: none;">
+        <div class="spinner">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+        </div>
+    </div>
     <script>
         document.getElementById('ocrButton').onclick = function () {
             document.getElementById('image').click();
@@ -155,6 +181,9 @@
         document.getElementById('image').onchange = async function () {
             const formData = new FormData();
             formData.append('image', this.files[0]);
+
+            // Show the full-screen spinner
+            document.getElementById('spinner-overlay').style.display = 'flex';
 
             try {
                 const response = await fetch('/ocr', {
@@ -171,6 +200,9 @@
             } catch (error) {
                 alert('Error processing the OCR request.');
                 console.error('Error:', error);
+            } finally {
+                // Hide the full-screen spinner
+                document.getElementById('spinner-overlay').style.display = 'none';
             }
         };
 

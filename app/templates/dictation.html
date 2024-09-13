@@ -321,7 +321,6 @@
                 .then(response => response.json())
                 .then(() => {
                     const audio = new Audio(`static/audio/${word}_${lang}.mp3`);
-                    audio.playbackRate = 0.5;
                     audio.play();
                     audio.addEventListener('ended', function () {
                         fetch('/delete_audios.json');
