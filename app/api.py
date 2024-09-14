@@ -13,6 +13,7 @@ import os
 import cv2
 import easyocr
 import io
+import gc
 
 words = []
 lang = None
@@ -82,6 +83,7 @@ def easyocr_api():
     image_path = './app/static/images/uploaded_image.jpg'
     image_file.save(image_path)
     img = cv2.imread(image_path)
+    # img = cv2.resize(img, (640, 480))
     blur = cv2.GaussianBlur(img,(5,5),0)
     reader = easyocr.Reader(['ch_sim', 'en'])
     result = reader.readtext(blur)
@@ -89,6 +91,8 @@ def easyocr_api():
     for (bbox, text, _) in result:
         (_, _, _, _) = bbox
         results.append(text)
+    del result
+    gc.collect()
     os.remove(image_path)
     return jsonify({'text': '\n'.join(results)})
 
