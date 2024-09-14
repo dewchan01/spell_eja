@@ -1,12 +1,18 @@
-from flask import jsonify, render_template, request, redirect, url_for
-from pypinyin import Style, pinyin
+import base64
+from difflib import SequenceMatcher
+from flask import json, jsonify, render_template, request, redirect, url_for
+import numpy as np
+from pypinyin import pinyin
+
+from PIL import Image
 from app import app
 from gtts import gTTS
-from PIL import Image
+from fuzzywuzzy import fuzz
 
 import os
 import cv2
-import pytesseract
+import easyocr
+import io
 
 words = []
 lang = None
@@ -44,7 +50,7 @@ def play_word(word, lang):
         print(e)
         return jsonify({'status': 'error'}), 500
 
-@app.route('/delete_audios.json', methods=['GET'])  # Ensure correct extension
+@app.route('/delete_audios.json', methods=['GET'])
 def delete_audios():
     audio_dir = 'app/static/audio'
     if os.path.exists(audio_dir):
@@ -68,17 +74,68 @@ def convert_pinyin():
     return jsonify({'pinyin': pinyin_text})
 
 @app.route('/ocr', methods=['POST'])
-def ocr_api():
+def easyocr_api():
     if 'image' not in request.files:
         return jsonify({'error': 'No image file provided\n没有提供图像文件'}), 400
 
     image_file = request.files['image']
     image_path = './app/static/images/uploaded_image.jpg'
     image_file.save(image_path)
-    image = cv2.imread(image_path)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)    
-    text = pytesseract.image_to_string(Image.fromarray(gray), lang='chi_sim')
+    img = cv2.imread(image_path)
+    blur = cv2.GaussianBlur(img,(5,5),0)
+    reader = easyocr.Reader(['ch_sim', 'en'])
+    result = reader.readtext(blur)
+    results = []
+    for (bbox, text, _) in result:
+        (_, _, _, _) = bbox
+        results.append(text)
     os.remove(image_path)
-    
-    return jsonify({'text': text})
+    return jsonify({'text': '\n'.join(results)})
 
+@app.route('/similarities', methods=['POST'])
+def get_similarities():
+    data = request.get_json()
+    results = {}
+
+    for key, value in data.items():
+        try:
+            safe_key = key.encode('utf-8').hex() 
+            image_string = value.split(",")[1]
+            image_bytes = base64.b64decode(image_string)
+            img = Image.open(io.BytesIO(image_bytes))
+            img = img.convert('RGBA')
+            background = Image.new('RGBA', img.size, (255, 255, 255))
+            img = Image.alpha_composite(background, img)
+            
+            # Save the image to a temporary location
+            image_path = f'./app/static/images/{safe_key}.png'
+            img.save(image_path, format='PNG')
+
+        except Exception as e:
+            results[key] = {'error': f'Failed to decode base64 image: {str(e)}'}
+            continue
+
+        try:
+            # Process the image with OCR
+            reader = easyocr.Reader(['ch_sim', 'en'])
+            ocr_results = reader.readtext(image_path)
+
+            # Clean up: remove the image after processing (optional)
+            os.remove(image_path)
+            # Extract the recognized text from the OCR results
+            if len(ocr_results) > 0:
+                extracted_text = ' '.join([text[1] for text in ocr_results]).lower().replace(' ', '')
+            else:
+                results[key] = {'ocr_text': '', 'similarity': 0.0}
+                continue
+
+            # Calculate similarity between the key (word) and the OCR extracted text
+            similarity = fuzz.ratio(extracted_text, key.lower())
+
+            # Store the result
+            results[key] = {'ocr_text': extracted_text, 'similarity': similarity}
+
+        except Exception as e:
+            results[key] = {'error': f'OCR processing error: {str(e)}'}
+
+    return jsonify(results)

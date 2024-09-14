@@ -129,6 +129,9 @@
             height: 270px;
             border: 1px solid #000;
             touch-action: none;
+            background-image: url("../static/images/canvas_bg.jpg");
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         #signature-pad {
@@ -141,18 +144,36 @@
             position: absolute;
             top: 0px;
             right: 5px;
-            font-size: 1.5rem;
+            font-size: 1rem;
             cursor: pointer;
             margin-top: 10px;
             border: none;
             color: #f07a7a;
-            background-color: white;
+            background-color: transparent;
         }
 
         .signature-pad-container {
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        #spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensures the overlay is on top */
+        }
+
+        .spinner {
+            font-size: 50px;
+            color: #ffffff;
         }
     </style>
 </head>
@@ -184,11 +205,14 @@
             <div class="button-container" id="buttonContainer">
                 <button class="retry-button" id="retryButton"><i class="fa-solid fa-rotate-right">
                         Retry<br />重试</i></button>
-                <button class="done-button" id="doneButton" onclick="window.location.href='/dictation_page.html'"><i
-                        class="fa-solid fa-check"> Done<br />完成</i></button>
+                <button class="done-button" id="doneButton"><i class="fa-solid fa-check"> Done<br />完成</i></button>
             </div>
         </div>
-
+        <div id="spinner-overlay" style="display: none;">
+            <div class="spinner">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+            </div>
+        </div>
         <script>
             const canvas = document.getElementById('signature-pad');
             const ctx = canvas.getContext('2d');
@@ -263,9 +287,14 @@
             });
 
             let data = JSON.parse(localStorage.getItem('handwrittenData'));
+            let similarities = JSON.parse(localStorage.getItem('similarities'));
             if (!data) {
                 data = {};
                 localStorage.setItem('handwrittenData', JSON.stringify(data));
+            }
+            if (!similarities) {
+                similarities = {};
+                localStorage.setItem('similarities', JSON.stringify(similarities));
             }
             // saveButton.addEventListener('click', () => {
             //     const dataURL = canvas.toDataURL('image/png');
@@ -435,37 +464,72 @@
             updateBoard();
         });
 
-        exitButton.addEventListener('click', () => {
-            window.location.href = '/dictation_page.html';
-        });
-
-        doneButton.addEventListener('click', () => {
+        doneButton.addEventListener('click', async () => {
+            document.getElementById('spinner-overlay').style.display = 'flex';
             rightArrow.click();
-            window.location.href = '/dictation_page.html';
+            const data = localStorage.getItem('handwrittenData');
+            try {
+                // Wait for the fetch request to complete
+                const response = await fetch(`/similarities`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: data,
+                });
+
+                // Wait for the response to be parsed into JSON
+                const similarities = await response.json();
+
+                // Save the similarities to localStorage
+                await localStorage.setItem('similarities', JSON.stringify(similarities));
+
+                window.location.href = '/dictation_page.html';
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                document.getElementById('spinner-overlay').style.display = 'none';
+            }
         });
 
-        exitButton.addEventListener('click', () => {
-                const dataURL = canvas.toDataURL('image/png');
-                const data = JSON.parse(localStorage.getItem('handwrittenData'));
-                if (!data) {
-                    localStorage.setItem('handwrittenData', '{}');
+        exitButton.addEventListener('click', async () => {
+            document.getElementById('spinner-overlay').style.display = 'flex';
+            const dataURL = canvas.toDataURL('image/png');
+            const data = JSON.parse(localStorage.getItem('handwrittenData'));
+            if (!data[words[currentIndex]]) {
+                data[words[currentIndex]] = dataURL;
+            }
+            else {
+                overwrite = confirm('Do you want to overwrite it?\n确定要更改？');
+                if (!overwrite) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    return;
                 }
-                if (!data[words[currentIndex]]) {
-                    data[words[currentIndex]] = dataURL;
-                }
-                else {
-                    overwrite = confirm('Do you want to overwrite it?\n确定要更改？');
-                    if (!overwrite) {
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        return;
-                    }
-                    data[words[currentIndex]] = dataURL;
-                }
-                localStorage.setItem('handwrittenData', JSON.stringify(data));
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                currentWord = '';
-            })
-            
+                data[words[currentIndex]] = dataURL;
+            }
+            localStorage.setItem('handwrittenData', JSON.stringify(data));
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            currentWord = '';
+            try {
+                // Wait for the fetch request to complete
+                const response = await fetch(`/similarities`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: localStorage.getItem('handwrittenData'),
+                });
+
+                // Wait for the response to be parsed into JSON
+                const similarities = await response.json();
+
+                // Save the similarities to localStorage
+                await localStorage.setItem('similarities', JSON.stringify(similarities));
+                window.location.href = '/dictation_page.html';
+
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                document.getElementById('spinner-overlay').style.display = 'none';
+            }
+        })
+
         // Initial board update
         updateBoard();
     </script>

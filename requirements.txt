@@ -6,3 +6,5 @@ pypinyin
 pyocr
 pytesseract
 opencv-python
+python-Levenshtein
+fuzzywuzzy

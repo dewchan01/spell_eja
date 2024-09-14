@@ -210,6 +210,7 @@
                         '</button>' +
                         '</div>';
                 });
+
             });
             // Display the modal
             modal.style.display = 'block';
@@ -226,14 +227,34 @@
                 }
             };
         }
-
         function openHandwrittingPopup(word) {
             const modal = document.getElementById('myModal');
             const modalBody = document.getElementById('modal-body');
             const modalTitle = document.querySelector('.modal h1');
             modalBody.innerHTML = ''; 
-            modalTitle.textContent = `${word}`;
 
+            // Get the similarities
+            const similarities = JSON.parse(localStorage.getItem('similarities') || '{}')[word];
+            if (similarities) {
+                const similarityList = document.createElement('ul');
+                modalTitle.appendChild(similarityList);
+                similarityList.innerHTML = 'Similarities: ' + similarities['similarity'];
+            }
+
+            const score = similarities['similarity'];
+            let emoji = '';
+            if (score >= 90) {
+                emoji = '😊';
+            } else if (score >= 80) {
+                emoji = '🙂';
+            } else if (score >= 70) {
+                emoji = '😐';
+            } else if (score >= 60) {
+                emoji = '😕';
+            } else {
+                emoji = '😞';
+            }
+            modalTitle.innerHTML = `<span style="float: left; font-size: 2em; text-decoration: underline;">${word}</span><span style="float: right; font-size: 2em">${emoji}</span>`;
             const data = JSON.parse(localStorage.getItem('handwrittenData') || '{}');
             if (data[word]) {
                 const drawing = data[word];
@@ -335,6 +356,7 @@
                     window.location.href = '/';
                 });
             localStorage.removeItem('handwrittenData');
+            localStorage.removeItem('similarities');
         }
 
         document.getElementById('retryButton').addEventListener('click', function () {
