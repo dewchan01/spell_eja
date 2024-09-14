@@ -83,7 +83,6 @@ def easyocr_api():
     image_path = './app/static/images/uploaded_image.jpg'
     image_file.save(image_path)
     img = cv2.imread(image_path)
-    # img = cv2.resize(img, (640, 480))
     blur = cv2.GaussianBlur(img,(5,5),0)
     reader = easyocr.Reader(['ch_sim', 'en'])
     result = reader.readtext(blur)
