@@ -318,6 +318,9 @@
             // });
 
             rightArrow.addEventListener('click', () => {
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.fillStyle = 'white'; 
+                ctx.fillRect(0, 0, canvas.width, canvas.height); 
                 const dataURL = canvas.toDataURL('image/png');
                 const data = JSON.parse(localStorage.getItem('handwrittenData'));
                 if (!data[words[currentIndex]]) {
@@ -337,6 +340,9 @@
             })
 
             leftArrow.addEventListener('click', () => {
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.fillStyle = 'white'; 
+                ctx.fillRect(0, 0, canvas.width, canvas.height); 
                 const dataURL = canvas.toDataURL('image/png');
                 const data = JSON.parse(localStorage.getItem('handwrittenData'));
                 if (!data) {
@@ -356,6 +362,7 @@
                 localStorage.setItem('handwrittenData', JSON.stringify(data));
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 currentWord = '';
+                ctx.globalCompositeOperation = 'source-over';
             })
 
             // Initial setup
@@ -492,6 +499,9 @@
 
         exitButton.addEventListener('click', async () => {
             document.getElementById('spinner-overlay').style.display = 'flex';
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = 'white'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height); 
             const dataURL = canvas.toDataURL('image/png');
             const data = JSON.parse(localStorage.getItem('handwrittenData'));
             if (!data[words[currentIndex]]) {
@@ -508,6 +518,7 @@
             localStorage.setItem('handwrittenData', JSON.stringify(data));
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             currentWord = '';
+            ctx.globalCompositeOperation = 'source-over';
             try {
                 // Wait for the fetch request to complete
                 const response = await fetch(`/similarities`, {

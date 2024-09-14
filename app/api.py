@@ -1,10 +1,12 @@
 import base64
 from difflib import SequenceMatcher
+import time
 from flask import json, jsonify, render_template, request, redirect, url_for
 import numpy as np
 from pypinyin import pinyin
 
 from PIL import Image
+import requests
 from app import app
 from gtts import gTTS
 from fuzzywuzzy import fuzz
@@ -74,7 +76,7 @@ def convert_pinyin():
     pinyin_text = ' '.join([''.join(item) for item in pinyin_result])
     return jsonify({'pinyin': pinyin_text})
 
-@app.route('/ocr', methods=['POST'])
+@app.route('/ocr_v1', methods=['POST'])
 def easyocr_api():
     if 'image' not in request.files:
         return jsonify({'error': 'No image file provided\n没有提供图像文件'}), 400
@@ -95,7 +97,7 @@ def easyocr_api():
     os.remove(image_path)
     return jsonify({'text': '\n'.join(results)})
 
-@app.route('/similarities', methods=['POST'])
+@app.route('/similarities_v1', methods=['POST'])
 def get_similarities():
     data = request.get_json()
     results = {}
@@ -132,6 +134,73 @@ def get_similarities():
                 results[key] = {'ocr_text': '', 'similarity': 0.0}
                 continue
 
+            # Calculate similarity between the key (word) and the OCR extracted text
+            similarity = fuzz.ratio(extracted_text, key.lower())
+
+            # Store the result
+            results[key] = {'ocr_text': extracted_text, 'similarity': similarity}
+
+        except Exception as e:
+            results[key] = {'error': f'OCR processing error: {str(e)}'}
+
+    return jsonify(results)
+
+@app.route('/ocr', methods=['POST'])
+def ocr_page():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image file provided\n没有提供图像文件'}), 400
+
+    image_file = request.files['image']
+    image_data = base64.b64encode(image_file.read()).decode('utf-8')
+    image_url = f"data:image/png;base64,{image_data}"
+    headers = {'Content-Type': 'application/json'}
+    data = {
+        "data": [image_url, ["en", "ch_sim"]],
+        "session_hash": "k65qy1668ak",
+        "action": "predict"
+    }
+    response = requests.post('https://tomofi-easyocr.hf.space/api/queue/push/', headers=headers, data=json.dumps(data))
+    new_data = {
+        "hash":response.json()['hash']
+    }
+    while True:
+        response = requests.post('https://tomofi-easyocr.hf.space/api/queue/status/', headers=headers, data=json.dumps(new_data))
+        if response.json()['status'] == "COMPLETE":
+            break
+        else:
+            time.sleep(2)
+    response = response.json()['data']['data'][1]['data']
+    extracted_texts = [text[0] for text in response]
+    return jsonify({'text': '\n'.join(extracted_texts)})
+
+@app.route('/similarities', methods=['POST'])
+def get_similarities_page():
+    data = request.get_json()
+    results = {}
+
+    for key, value in data.items():
+        try:
+            # Process the image with OCR
+            headers = {'Content-Type': 'application/json'}
+            data = {
+                "data": [value, ["en", "ch_sim"]],
+                "session_hash": "k65qy1668ak",
+                "action": "predict"
+            }
+            # Clean up: remove the image after processing (optional)
+            response = requests.post('https://tomofi-easyocr.hf.space/api/queue/push/', headers=headers, data=json.dumps(data))
+            new_data = {
+                "hash":response.json()['hash']
+            }
+            while True:
+                response = requests.post('https://tomofi-easyocr.hf.space/api/queue/status/', headers=headers, data=json.dumps(new_data))
+                if response.json()['status'] == "COMPLETE":
+                    break
+                else:
+                    time.sleep(2)
+            response = response.json()['data']['data'][1]['data']
+            extracted_texts = [text[0] for text in response]
+            extracted_text = ' '.join(extracted_texts).lower().replace(' ', '')
             # Calculate similarity between the key (word) and the OCR extracted text
             similarity = fuzz.ratio(extracted_text, key.lower())
 
