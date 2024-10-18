@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dictation</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -23,13 +24,10 @@
             align-items: center;
             width: 90%;
             border: 3px solid #000;
-            /* Outermost border */
             padding: 20px;
             margin-top: 5vh;
             border-radius: 10px;
-            /* Rounded corners for a cleaner look */
             background-color: #fff;
-            /* White background for contrast */
         }
 
         .word-item {
@@ -38,12 +36,35 @@
             align-items: center;
             margin: 10px;
             border: 1px solid #000;
-            /* Border for each word item */
             padding: 10px;
             border-radius: 5px;
             background-color: #eaeaea;
-            /* Slight background color for each item */
             width: 100%;
+            cursor: grab;
+            transition: opacity 0.2s ease-in-out;
+            position: relative;
+        }
+
+        .word-item.dragging {
+            opacity: 0.5;
+            position: absolute;
+            z-index: 1000;
+            cursor: grabbing;
+        }
+
+        .placeholder {
+            height: 60px;
+            background-color: #ccc;
+            border: 2px dashed #000;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            visibility: visible;
+        }
+
+        .hamburger {
+            margin-right: 10px;
+            cursor: move;
+            font-size: 24px;
         }
 
         .word {
@@ -68,7 +89,6 @@
 
         .play-button i {
             margin-right: 5px;
-            /* Space between icon and text */
             font-size: 36px;
         }
 
@@ -165,7 +185,8 @@
     </div>
     <div id="wordsContainer">
         {% for word in words %}
-        <div class="word-item" data-word="{{ word }}">
+        <div class="word-item" data-word="{{ word }}" draggable="true">
+            <span class="hamburger"><i class="fa-solid fa-bars"></i></span>
             <span class="word">{{ word }}</span>
             <button class="play-button draw-button" id="draw-{{ word }}" onclick="openHandwrittingPopup('{{ word }}')"
                 style='visibility:hidden'><i class="fa-solid fa-pen-to-square"></i></button>
@@ -180,6 +201,7 @@
         </div>
         {% endfor %}
     </div>
+    </div>
     <div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -188,6 +210,71 @@
         </div>
     </div>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const wordItems = document.querySelectorAll('.word-item');
+            const wordsContainer = document.getElementById('wordsContainer');
+            let draggedItem = null;
+            let offsetX, offsetY;
+
+            wordItems.forEach(item => {
+                // Handle mousedown to initiate drag
+                item.addEventListener('mousedown', function (e) {
+                    draggedItem = item;
+                    const rect = item.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+
+                    // Add dragging class and absolute positioning
+                    item.classList.add('dragging');
+                    document.body.appendChild(item);  // Move it out of the container so it follows the mouse
+                    moveAt(e.pageX, e.pageY);
+
+                    function moveAt(pageX, pageY) {
+                        item.style.left = pageX - offsetX + 'px';
+                        item.style.top = pageY - offsetY + 'px';
+                    }
+
+                    // Move the item with the cursor
+                    function onMouseMove(e) {
+                        moveAt(e.pageX, e.pageY);
+                    }
+
+                    // Attach mousemove event
+                    document.addEventListener('mousemove', onMouseMove);
+
+                    // Handle mouseup to stop dragging
+                    document.addEventListener('mouseup', function onMouseUp() {
+                        document.removeEventListener('mousemove', onMouseMove);
+                        item.classList.remove('dragging');
+                        wordsContainer.appendChild(item);  // Move it back into the container
+                        item.style.left = 'auto';
+                        item.style.top = 'auto';
+                        draggedItem = null;
+
+                        updateWordOrder();
+
+                        // Clean up the mouseup event listener
+                        document.removeEventListener('mouseup', onMouseUp);
+                    });
+                });
+
+                // Prevent default drag behavior
+                item.addEventListener('dragstart', function (e) {
+                    e.preventDefault();
+                });
+            });
+            // Function to update the word order in localStorage
+            function updateWordOrder() {
+                const wordElements = document.querySelectorAll('.word-item');
+                const words = Array.from(wordElements).map(item => item.dataset.word);
+
+                const storedData = JSON.parse(localStorage.getItem('dictationForm') || '{}');
+                storedData.words = words.join('\n');  // Join words with newline for consistency
+
+                localStorage.setItem('dictationForm', JSON.stringify(storedData));
+            }
+        });
+
         function openCharacterPopup(word) {
             const wordFormatted = word.replace(/_/g, '');
             const characters = [...new Set(wordFormatted.split(''))];
@@ -231,7 +318,7 @@
             const modal = document.getElementById('myModal');
             const modalBody = document.getElementById('modal-body');
             const modalTitle = document.querySelector('.modal h1');
-            modalBody.innerHTML = ''; 
+            modalBody.innerHTML = '';
 
             // Get the similarities
             const similarities = JSON.parse(localStorage.getItem('similarities') || '{}')[word];
