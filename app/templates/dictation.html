@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=0.1">
     <title>Dictation</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -46,19 +46,10 @@
         }
 
         .word-item.dragging {
-            opacity: 0.5;
+            opacity: 1;
             position: absolute;
             z-index: 1000;
             cursor: grabbing;
-        }
-
-        .placeholder {
-            height: 60px;
-            background-color: #ccc;
-            border: 2px dashed #000;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            visibility: visible;
         }
 
         .hamburger {
@@ -210,69 +201,141 @@
         </div>
     </div>
     <script>
+        const sortableList = document.getElementById("wordsContainer"); // Change this to wordsContainer
         document.addEventListener('DOMContentLoaded', function () {
-            const wordItems = document.querySelectorAll('.word-item');
-            const wordsContainer = document.getElementById('wordsContainer');
+            loadWordsFromLocalStorage(); // Call to load words when DOM is ready
             let draggedItem = null;
-            let offsetX, offsetY;
 
-            wordItems.forEach(item => {
-                // Handle mousedown to initiate drag
-                item.addEventListener('mousedown', function (e) {
-                    draggedItem = item;
-                    const rect = item.getBoundingClientRect();
-                    offsetX = e.clientX - rect.left;
-                    offsetY = e.clientY - rect.top;
-
-                    // Add dragging class and absolute positioning
-                    item.classList.add('dragging');
-                    document.body.appendChild(item);  // Move it out of the container so it follows the mouse
-                    moveAt(e.pageX, e.pageY);
-
-                    function moveAt(pageX, pageY) {
-                        item.style.left = pageX - offsetX + 'px';
-                        item.style.top = pageY - offsetY + 'px';
-                    }
-
-                    // Move the item with the cursor
-                    function onMouseMove(e) {
-                        moveAt(e.pageX, e.pageY);
-                    }
-
-                    // Attach mousemove event
-                    document.addEventListener('mousemove', onMouseMove);
-
-                    // Handle mouseup to stop dragging
-                    document.addEventListener('mouseup', function onMouseUp() {
-                        document.removeEventListener('mousemove', onMouseMove);
-                        item.classList.remove('dragging');
-                        wordsContainer.appendChild(item);  // Move it back into the container
-                        item.style.left = 'auto';
-                        item.style.top = 'auto';
-                        draggedItem = null;
-
-                        updateWordOrder();
-
-                        // Clean up the mouseup event listener
-                        document.removeEventListener('mouseup', onMouseUp);
-                    });
-                });
-
-                // Prevent default drag behavior
-                item.addEventListener('dragstart', function (e) {
-                    e.preventDefault();
-                });
+            // Handle drag start
+            sortableList.addEventListener("dragstart", (e) => {
+                if (!e.target.classList.contains('word-item')) return; // Only drag word items
+                draggedItem = e.target;
+                setTimeout(() => {
+                    e.target.style.display = "none";
+                }, 0);
             });
-            // Function to update the word order in localStorage
+
+            // Handle drag end
+            sortableList.addEventListener("dragend", (e) => {
+                setTimeout(() => {
+                    e.target.style.display = "";
+                    draggedItem = null;
+                }, 0);
+                updateWordOrder();
+            });
+
+            // Handle drag over
+            sortableList.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(sortableList, e.clientY);
+                if (afterElement == null) {
+                    sortableList.appendChild(draggedItem);
+                } else {
+                    sortableList.insertBefore(draggedItem, afterElement);
+                }
+            });
+
+            let initialY = 0; // For tracking the initial position
+
+            // Handle touch start
+            sortableList.addEventListener("touchstart", (e) => {
+                const target = e.target.closest('.word-item'); // Ensure we target the word item
+                if (!target) return; // Only drag word items
+                draggedItem = target;
+                initialY = e.touches[0].clientY; // Get the initial touch position
+                draggedItem.style.opacity = "0.5"; // Make it look like it's being dragged
+            });
+
+            // Handle touch move
+            sortableList.addEventListener("touchmove", (e) => {
+                if (!draggedItem) return; // Only move if an item is being dragged
+                e.preventDefault();
+
+                const touch = e.touches[0];
+                const currentY = touch.clientY;
+
+                // Move the dragged item
+                const offsetY = currentY - initialY; // Calculate the offset
+                draggedItem.style.transform = `translateY(${offsetY}px)`; // Move the dragged item vertically
+
+                // Determine where to insert the dragged item
+                const afterElement = getDragAfterElement(sortableList, currentY); // Use currentY for the new insertion logic
+                if (afterElement == null) {
+                    sortableList.appendChild(draggedItem); // Append if no afterElement found
+                } else {
+                    sortableList.insertBefore(draggedItem, afterElement); // Insert before the identified element
+                }
+            });
+
+            // Handle touch end
+            sortableList.addEventListener("touchend", (e) => {
+                if (draggedItem) {
+                    draggedItem.style.opacity = ""; // Reset opacity
+                    draggedItem.style.transform = ""; // Reset transform
+                    updateWordOrder(); // Update order after dropping
+                    draggedItem = null; // Reset draggedItem
+                }
+            });
+
+            const getDragAfterElement = (container, y) => {
+                const draggableElements = [...container.querySelectorAll(".word-item:not(.dragging)")]; // Use the correct class
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return {
+                            offset: offset,
+                            element: child,
+                        };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            };
+
+            // Update local storage after dragging
             function updateWordOrder() {
-                const wordElements = document.querySelectorAll('.word-item');
-                const words = Array.from(wordElements).map(item => item.dataset.word);
-
+                const words = Array.from(sortableList.children).map(item => item.dataset.word);
                 const storedData = JSON.parse(localStorage.getItem('dictationForm') || '{}');
-                storedData.words = words.join('\n');  // Join words with newline for consistency
-
+                storedData.words = words.join('\n');
                 localStorage.setItem('dictationForm', JSON.stringify(storedData));
             }
+
+            function createWordItem(word) {
+                const div = document.createElement('div');
+                div.classList.add('word-item');
+                div.dataset.word = word;
+                div.draggable = true;
+                div.innerHTML = `
+                    <span class="hamburger"><i class="fa-solid fa-bars"></i></span>
+                    <span class="word">${word}</span>
+                    <button class="play-button draw-button" id="draw-${word}" onclick="openHandwrittingPopup('${word}')" style='visibility:hidden'><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="play-button" onclick="playWord('${word}')"><i class="fa-solid fa-play"></i></button>
+                    <button class="play-button" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(word)}', '_blank')"><i class="fa-brands fa-google"></i></button>
+                    <button class="play-button dictionary-button"><i class="fa-solid fa-book"> Dictionary</i></button>
+                    <button class="play-button zh-dictionary-button" onclick="openCharacterPopup('${word}')"><i class="fa-solid fa-book-open"> 笔顺、拼音、部首</i></button>
+                    `;
+                return div;
+            }
+
+            // Load words from localStorage on page load
+            function loadWordsFromLocalStorage() {
+                sortableList.innerHTML = ''; // Clear previous items
+
+                const storedData = JSON.parse(localStorage.getItem('dictationForm'));
+                if (storedData && storedData.words) {
+                    const wordsArray = storedData.words.split('\n');
+                    wordsArray.forEach(word => {
+                        const wordItem = createWordItem(word); // Assume this creates a word item element
+                        sortableList.appendChild(wordItem); // Append to the container
+                    });
+                }
+            }
+
+            // Load words when the page is ready
+            loadWordsFromLocalStorage();
+
+            sortableList.addEventListener("drop", updateWordOrder); // Call update on drop
         });
 
         function openCharacterPopup(word) {

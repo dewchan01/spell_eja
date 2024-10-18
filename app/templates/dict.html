@@ -168,7 +168,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000; /* Ensures the overlay is on top */
+            z-index: 1000;
+            /* Ensures the overlay is on top */
         }
 
         .spinner {
@@ -319,8 +320,8 @@
 
             rightArrow.addEventListener('click', () => {
                 ctx.globalCompositeOperation = 'destination-over';
-                ctx.fillStyle = 'white'; 
-                ctx.fillRect(0, 0, canvas.width, canvas.height); 
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 const dataURL = canvas.toDataURL('image/png');
                 const data = JSON.parse(localStorage.getItem('handwrittenData'));
                 if (!data[words[currentIndex]]) {
@@ -341,8 +342,8 @@
 
             leftArrow.addEventListener('click', () => {
                 ctx.globalCompositeOperation = 'destination-over';
-                ctx.fillStyle = 'white'; 
-                ctx.fillRect(0, 0, canvas.width, canvas.height); 
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 const dataURL = canvas.toDataURL('image/png');
                 const data = JSON.parse(localStorage.getItem('handwrittenData'));
                 if (!data) {
@@ -379,7 +380,6 @@
 
 
     <script>
-        // Retrieve the stored form data
         const dictationData = JSON.parse(localStorage.getItem('dictationForm'));
 
         // Get the words and language from the form data
@@ -477,7 +477,7 @@
             const data = localStorage.getItem('handwrittenData');
             try {
                 // Wait for the fetch request to complete
-                const response = await fetch(`/similarities`, {
+                const response = await fetch(`/similarities_v1`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: data,
@@ -500,8 +500,8 @@
         exitButton.addEventListener('click', async () => {
             document.getElementById('spinner-overlay').style.display = 'flex';
             ctx.globalCompositeOperation = 'destination-over';
-            ctx.fillStyle = 'white'; 
-            ctx.fillRect(0, 0, canvas.width, canvas.height); 
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             const dataURL = canvas.toDataURL('image/png');
             const data = JSON.parse(localStorage.getItem('handwrittenData'));
             if (!data[words[currentIndex]]) {
@@ -521,7 +521,7 @@
             ctx.globalCompositeOperation = 'source-over';
             try {
                 // Wait for the fetch request to complete
-                const response = await fetch(`/similarities`, {
+                const response = await fetch(`/similarities_v1`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: localStorage.getItem('handwrittenData'),
