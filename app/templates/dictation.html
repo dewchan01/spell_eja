@@ -46,9 +46,6 @@
         }
 
         .word-item.dragging {
-            opacity: 1;
-            position: absolute;
-            z-index: 1000;
             cursor: grabbing;
         }
 
@@ -243,7 +240,7 @@
                 if (!target) return; // Only drag word items
                 draggedItem = target;
                 initialY = e.touches[0].clientY; // Get the initial touch position
-                draggedItem.style.opacity = "0.5"; // Make it look like it's being dragged
+                draggedItem.classList.add('dragging'); // Add dragging class for visual feedback
             });
 
             // Handle touch move
@@ -270,7 +267,7 @@
             // Handle touch end
             sortableList.addEventListener("touchend", (e) => {
                 if (draggedItem) {
-                    draggedItem.style.opacity = ""; // Reset opacity
+                    draggedItem.classList.remove('dragging'); // Remove dragging class
                     draggedItem.style.transform = ""; // Reset transform
                     updateWordOrder(); // Update order after dropping
                     draggedItem = null; // Reset draggedItem
