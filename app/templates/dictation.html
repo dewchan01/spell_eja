@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=0.1">
     <title>Dictation</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/eruda@3.4.0/eruda.min.js"></script>
+    <script>eruda.init();</script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -202,40 +204,13 @@
         document.addEventListener('DOMContentLoaded', function () {
             loadWordsFromLocalStorage(); // Call to load words when DOM is ready
             let draggedItem = null;
-
-            // Handle drag start
-            sortableList.addEventListener("dragstart", (e) => {
-                if (!e.target.classList.contains('word-item')) return; // Only drag word items
-                draggedItem = e.target;
-                setTimeout(() => {
-                    e.target.style.display = "none";
-                }, 0);
-            });
-
-            // Handle drag end
-            sortableList.addEventListener("dragend", (e) => {
-                setTimeout(() => {
-                    e.target.style.display = "";
-                    draggedItem = null;
-                }, 0);
-                updateWordOrder();
-            });
-
-            // Handle drag over
-            sortableList.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                const afterElement = getDragAfterElement(sortableList, e.clientY);
-                if (afterElement == null) {
-                    sortableList.appendChild(draggedItem);
-                } else {
-                    sortableList.insertBefore(draggedItem, afterElement);
-                }
-            });
-
             let initialY = 0; // For tracking the initial position
+            let isTouchStart = false;
 
             // Handle touch start
             sortableList.addEventListener("touchstart", (e) => {
+                console.log("touchstart");
+                isTouchStart = true;
                 const target = e.target.closest('.word-item'); // Ensure we target the word item
                 if (!target) return; // Only drag word items
                 draggedItem = target;
@@ -245,6 +220,7 @@
 
             // Handle touch move
             sortableList.addEventListener("touchmove", (e) => {
+                console.log("touchmove");
                 if (!draggedItem) return; // Only move if an item is being dragged
                 e.preventDefault();
 
@@ -266,11 +242,46 @@
 
             // Handle touch end
             sortableList.addEventListener("touchend", (e) => {
+                console.log("touchend");
                 if (draggedItem) {
                     draggedItem.classList.remove('dragging'); // Remove dragging class
                     draggedItem.style.transform = ""; // Reset transform
                     updateWordOrder(); // Update order after dropping
                     draggedItem = null; // Reset draggedItem
+                }
+                isTouchStart = false;
+            });
+
+            // Handle drag start
+            sortableList.addEventListener("dragstart", (e) => {
+                console.log("dragstart");
+                if (!e.target.classList.contains('word-item')) return; // Only drag word items
+                draggedItem = e.target;
+                setTimeout(() => {
+                    if (isTouchStart) return; // Skip if it's a touchstart
+                    e.target.style.display = "none"; // Hide the item on drag start (desktop)
+                }, 0);
+            });
+
+            // Handle drag end
+            sortableList.addEventListener("dragend", (e) => {
+                setTimeout(() => {
+                    console.log("dragend");
+                    e.target.style.display = "";
+                    draggedItem = null;
+                }, 0);
+                updateWordOrder();
+            });
+
+            // Handle drag over
+            sortableList.addEventListener("dragover", (e) => {
+                console.log("dragover");
+                e.preventDefault();
+                const afterElement = getDragAfterElement(sortableList, e.clientY);
+                if (afterElement == null) {
+                    sortableList.appendChild(draggedItem);
+                } else {
+                    sortableList.insertBefore(draggedItem, afterElement);
                 }
             });
 
