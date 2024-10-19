@@ -9,3 +9,10 @@ opencv-python
 python-Levenshtein
 fuzzywuzzy
 easyocr
+python-pptx
+python-docx
+PyPDF2 
+pandas
+openpyxl 
+xlrd 
+odfpy

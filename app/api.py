@@ -1,10 +1,11 @@
 import base64
-from difflib import SequenceMatcher
-import random
 import time
 from flask import json, jsonify, render_template, request, redirect, url_for
-import numpy as np
 from pypinyin import pinyin
+from pptx import Presentation
+from PyPDF2 import PdfReader
+from docx import Document
+import pandas as pd
 
 from PIL import Image
 import requests
@@ -181,31 +182,83 @@ def get_similarities_page():
 
     for key, value in data.items():
         try:
-            # headers = {'Content-Type': 'application/json'}
-            # data = {
-            #     "data": [value, ["en", "ch_sim"]],
-            #     "session_hash": "k65qy1668ak",
-            #     "action": "predict"
-            # }
-            # response = requests.post('https://tomofi-easyocr.hf.space/api/queue/push/', headers=headers, data=json.dumps(data))
-            # new_data = {
-            #     "hash":response.json()['hash']
-            # }
-            # while True:
-            #     response = requests.post('https://tomofi-easyocr.hf.space/api/queue/status/', headers=headers, data=json.dumps(new_data))
-            #     if response.json()['status'] == "COMPLETE":
-            #         break
-            #     else:
-            #         time.sleep(2)
-            # response = response.json()['data']['data'][1]['data']
-            # extracted_texts = [text[0] for text in response]
-            # extracted_text = ' '.join(extracted_texts).lower().replace(' ', '')
-            # similarity = fuzz.ratio(extracted_text, key.lower())
+            headers = {'Content-Type': 'application/json'}
+            data = {
+                "data": [value, ["en", "ch_sim"]],
+                "session_hash": "k65qy1668ak",
+                "action": "predict"
+            }
+            response = requests.post('https://tomofi-easyocr.hf.space/api/queue/push/', headers=headers, data=json.dumps(data))
+            new_data = {
+                "hash":response.json()['hash']
+            }
+            while True:
+                response = requests.post('https://tomofi-easyocr.hf.space/api/queue/status/', headers=headers, data=json.dumps(new_data))
+                if response.json()['status'] == "COMPLETE":
+                    break
+                else:
+                    time.sleep(2)
+            response = response.json()['data']['data'][1]['data']
+            extracted_texts = [text[0] for text in response]
+            extracted_text = ' '.join(extracted_texts).lower().replace(' ', '')
+            similarity = fuzz.ratio(extracted_text, key.lower())
 
-            # results[key] = {'ocr_text': extracted_text, 'similarity': similarity}
-            results[key] = {'ocr_text': key, 'similarity': random.randint(60, 100)}
+            results[key] = {'ocr_text': extracted_text, 'similarity': similarity}
+            # results[key] = {'ocr_text': key, 'similarity': random.randint(60, 100)}
 
         except Exception as e:
             results[key] = {'error': f'OCR processing error: {str(e)}'}
 
     return jsonify(results)
+
+@app.route('/extract_docsfile_text', methods=['POST'])
+def extract_docsfile_text():
+    file = request.files['docsfile']
+    if file.filename.endswith('.pptx'):
+        prs = Presentation(file)
+        text_runs = []
+        for slide in prs.slides:
+            for shape in slide.shapes:
+                if hasattr(shape, "text"):
+                    text_runs.append(shape.text)
+    elif file.filename.endswith('.pdf'):
+        pdf = PdfReader(file)
+        text_runs = []
+        for page in pdf.pages:
+            text_runs.append(page.extract_text())
+    elif file.filename.endswith(('.docx', '.doc', '.odt', '.txt')):
+        doc = Document(file)
+        text_runs = []
+        for para in doc.paragraphs:
+            text_runs.append(para.text)
+    elif file.filename.endswith(('.xlsx', '.xls', '.ods', '.csv')):
+        text_runs = []
+        if file.filename.endswith('.xlsx'):
+            df = pd.read_excel(file)
+            print("Loaded .xlsx file successfully.")
+        elif file.filename.endswith('.xls'):
+            df = pd.read_excel(file, engine='xlrd')
+            print("Loaded .xls file successfully.")
+        elif file.filename.endswith('.ods'):
+            df = pd.read_excel(file, engine='odf')
+            print("Loaded .ods file successfully.")
+        elif file.filename.endswith('.csv'):
+            df = pd.read_csv(file)
+            print("Loaded .csv file successfully.")
+        
+        if isinstance(df,pd.DataFrame): 
+            for sheet_name, sheet in df.items():
+                print(f"Processing sheet: {type(sheet)} - {sheet_name}")
+                if isinstance(sheet, pd.core.series.Series):
+                    text_runs.extend([str(x) for x in sheet]) 
+                else:
+                    print(f"Unexpected format for sheet: {sheet_name}")
+        elif isinstance(df, pd.DataFrame):  
+            for index, row in df.iterrows():
+                text_runs.append(str(row.to_dict()))  
+        else:
+                print("Unexpected format: df is neither a DataFrame nor a dict.")
+                return {"error": "Unexpected format."}
+    else:
+        return jsonify({'error': 'File type not supported'})
+    return jsonify({'text': '\n'.join(text_runs)})

@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.01">
     <title>Dictation</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -89,7 +90,8 @@
             color: #f5f5f5;
         }
 
-        #ocrButton {
+        #ocrButton,
+        #extractButton {
             background-color: #fab965;
             color: rgb(56, 50, 50);
             border: none;
@@ -161,7 +163,9 @@
                 <option value="ms">Bahasa Malaysia</option>
             </select>
             <input type="file" id="image" accept="image/*" style="display: none;">
+            <input type="file" id="docsfile" accept=".pptx,.pdf,.docx,.doc,.odt,.txt,.xlsx,.xls,.ods,.csv" style="display: none;">
             <button id="ocrButton" type="button"><i class="fa-solid fa-file-image"></i></button>
+            <button id="extractButton" type="button"><i class="fa-solid fa-file"></i></button>
         </div>
         <div id="buttons">
             <button type="submit" id="startButton"><i class="fa-solid fa-hourglass-start"> Start 开始</i></button>
@@ -178,6 +182,10 @@
             document.getElementById('image').click();
         };
 
+        document.getElementById('extractButton').onclick = function () {
+            document.getElementById('docsfile').click();
+        };
+
         document.getElementById('image').onchange = async function () {
             const formData = new FormData();
             formData.append('image', this.files[0]);
@@ -186,7 +194,7 @@
             document.getElementById('spinner-overlay').style.display = 'flex';
 
             try {
-                const response = await fetch('/ocr', {
+                const response = await fetch('/ocr_v1', {
                     method: 'POST',
                     body: formData
                 });
@@ -199,6 +207,34 @@
                 }
             } catch (error) {
                 alert('Error processing the OCR request.');
+                console.error('Error:', error);
+            } finally {
+                // Hide the full-screen spinner
+                document.getElementById('spinner-overlay').style.display = 'none';
+            }
+        };
+
+        document.getElementById('docsfile').onchange = async function () {
+            const formData = new FormData();
+            formData.append('docsfile', this.files[0]);
+
+            // Show the full-screen spinner
+            document.getElementById('spinner-overlay').style.display = 'flex';
+
+            try {
+                const response = await fetch('/extract_docsfile_text', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.text) {
+                    document.getElementById('words').value = result.text;
+                } else {
+                    alert('Error: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error processing the extract request.');
                 console.error('Error:', error);
             } finally {
                 // Hide the full-screen spinner
