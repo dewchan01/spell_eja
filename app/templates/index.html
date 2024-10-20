@@ -55,9 +55,14 @@
         #historyContainer {
             font-size: 24px;
             padding: 5px;
-            margin-right: 4vw;
+            margin-right: auto;
             border-radius: 5px;
             float: right;
+            width: 30%;
+        }
+
+        #history {
+            width: 80%;
         }
 
         #historyContainer i {
@@ -107,18 +112,19 @@
             align-items: flex-end;
             height: 5vh;
         }
-        
+
         #spinner-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000; /* Ensures the overlay is on top */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            /* Ensures the overlay is on top */
         }
 
         .spinner {
@@ -126,6 +132,17 @@
             color: #ffffff;
         }
 
+        #copyButton {
+            position: absolute;
+            top: 5px;
+            right: 18px;
+            opacity: 0.5;
+        }
+
+        #wordsContainer {
+            position: relative; 
+            display: inline-block;
+        }
     </style>
 </head>
 
@@ -134,7 +151,7 @@
     <div id="historyContainer">
         <i class="fa-solid fa-clock-rotate-left"></i>
         <select id="history">
-            <option value="" disabled selected>History 搜寻历史 </option>
+            <option value="" disabled selected>History 历史 </option>
         </select>
     </div>
     <script>
@@ -155,7 +172,12 @@
     </script>
     </script>
     <form id="dictationForm" method="POST" action="/submit_words" onsubmit="submitWords(event)">
-        <textarea name="words" id="words" cols="30" rows="10" placeholder="spelling&#10;ejaan&#10;听写"></textarea>
+        <div id = "wordsContainer">
+            <textarea name="words" id="words" cols="30" rows="10" placeholder="spelling&#10;ejaan&#10;听写"></textarea>
+            <button type="button" id="copyButton" onclick="copyTextToClipboard()">
+                <i class="fa-solid fa-copy"></i>
+            </button>
+        </div>
         <div id="options">
             <select name="lang" id="lang">
                 <option value="en">English</option>
@@ -163,7 +185,8 @@
                 <option value="ms">Bahasa Malaysia</option>
             </select>
             <!-- <input type="file" id="image" accept="image/*" style="display: none;"> -->
-            <input type="file" id="docsfile" accept="image/*, .ppt, .pptx,.pdf,.docx,.doc,.odt,.txt,.xlsx,.xls,.ods,.csv" style="display: none;">
+            <input type="file" id="docsfile"
+                accept="image/*, .ppt, .pptx,.pdf,.docx,.doc,.odt,.txt,.xlsx,.xls,.ods,.csv" style="display: none;">
             <!-- <button id="ocrButton" type="button"><i class="fa-solid fa-file-image"></i></button> -->
             <button id="extractButton" type="button"><i class="fa-solid fa-file"></i></button>
         </div>
@@ -181,6 +204,18 @@
         // document.getElementById('ocrButton').onclick = function () {
         //     document.getElementById('image').click();
         // };
+        function copyTextToClipboard() {
+            const textarea = document.getElementById('words');
+            const text = textarea.value.trim();
+            if (text && text !== textarea.placeholder) {
+                textarea.select();
+                document.execCommand('copy');
+                alert('Text copied to clipboard!');
+            }
+            else{
+                alert('Nothing to copy!');
+            }
+        }
 
         document.getElementById('extractButton').onclick = function () {
             document.getElementById('docsfile').click();
@@ -293,11 +328,15 @@
 
         localStorage.setItem('dictationForm', JSON.stringify(Object.fromEntries(new FormData(event.target).entries())));
         const previousHistory = localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : [];
-        const newHistory = [...previousHistory, ...words.split('\n').filter(word => word.trim() !== '')];
+        const newHistory = [...previousHistory, words].filter(word => word.trim() !== '');
         localStorage.setItem('history', JSON.stringify(newHistory));
     }
 
     document.getElementById('dictationForm').addEventListener('reset', function () {
+        textarea = document.getElementById('words');
+        textarea.value = '';
+        textarea.placeholder = "spelling\nejaan\n听写";
+        textarea.focus();
         localStorage.removeItem('dictationForm');
     })
 

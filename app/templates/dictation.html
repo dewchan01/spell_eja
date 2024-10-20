@@ -20,6 +20,16 @@
             padding: 20px;
         }
 
+        #legends{
+            margin:2% 0;
+            font: 30px sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            overflow: auto;
+            gap: 10px;
+        }
+
         #wordsContainer {
             display: flex;
             flex-direction: column;
@@ -27,7 +37,6 @@
             width: 90%;
             border: 3px solid #000;
             padding: 20px;
-            margin-top: 5vh;
             border-radius: 10px;
             background-color: #fff;
         }
@@ -42,9 +51,8 @@
             border-radius: 5px;
             background-color: #eaeaea;
             width: 100%;
-            overflow: hidden;
+            overflow: auto;
             white-space: nowrap;
-            text-overflow: wrap;
             cursor: grab;
             opacity: 1;
         }
@@ -96,11 +104,12 @@
         #buttons {
             display: flex;
             flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
             justify-content: center;
             font-size: 42px;
             gap: 40px;
+            width: 100%;
+            overflow: auto;
+            flex-wrap: wrap;
         }
 
         #reinputButton {
@@ -169,6 +178,16 @@
         .button {
             margin-bottom: 10px;
         }
+        @media screen and (min-width: 960px) and (max-width: 1350px) {
+            #legends {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                overflow: auto;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+        }
     </style>
 </head>
 
@@ -177,7 +196,19 @@
         <button id="retryButton"><i class="fa-solid fa-random"> Random<br />随机听写</i></button>
         <button id="startButton"><i class="fa-solid fa-hourglass-start"> Start<br />开始听写</i></button>
         <button id="reinputButton" onclick="exitPage()"><i class="fa-solid fa-check"> Done<br />完成听写</i></button>
+        <div id="legends">
+            <i class="fa-solid fa-pen-to-square">
+                <span> Handwriting 手写</span>
+            </i>
+            <i class="fa-solid fa-book">
+                <span> Dictionary 词典</span>
+            </i>
+            <i class="fa-solid fa-book-open">
+                <span> 笔顺、拼音、部首</span>
+            </i>
+        </div>
     </div>
+    
     <div id="wordsContainer">
         {% for word in words %}
         <div class="word-item" data-word="{{ word }}" draggable="true">
@@ -190,9 +221,9 @@
             <button class="play-button"
                 onclick="window.open('https://www.google.com/search?q={{ word|urlencode }}', '_blank')"><i
                     class="fa-brands fa-google"></i></button>
-            <button class="play-button dictionary-button"><i class="fa-solid fa-book"></i> Dictionary</button>
+            <button class="play-button dictionary-button"><i class="fa-solid fa-book"></i></button>
             <button class="play-button zh-dictionary-button" onclick="openCharacterPopup('{{ word }}')"><i
-                    class="fa-solid fa-book-open"> 笔顺、拼音、部首</i> </button>
+                    class="fa-solid fa-book-open"></i> </button>
         </div>
         {% endfor %}
     </div>
@@ -325,8 +356,8 @@
                     <button class="play-button draw-button" id="draw-${word}" onclick="openHandwrittingPopup('${word}')" style='visibility:hidden'><i class="fa-solid fa-pen-to-square"></i></button>
                     <button class="play-button" onclick="playWord('${word}')"><i class="fa-solid fa-play"></i></button>
                     <button class="play-button" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(word)}', '_blank')"><i class="fa-brands fa-google"></i></button>
-                    <button class="play-button dictionary-button"><i class="fa-solid fa-book"> Dictionary</i></button>
-                    <button class="play-button zh-dictionary-button" onclick="openCharacterPopup('${word}')"><i class="fa-solid fa-book-open"> 笔顺、拼音、部首</i></button>
+                    <button class="play-button dictionary-button"><i class="fa-solid fa-book"></i></button>
+                    <button class="play-button zh-dictionary-button" onclick="openCharacterPopup('${word}')"><i class="fa-solid fa-book-open"></i></button>
                     `;
                 return div;
             }
