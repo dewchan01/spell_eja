@@ -162,9 +162,9 @@
                 <option value="zh">中文</option>
                 <option value="ms">Bahasa Malaysia</option>
             </select>
-            <input type="file" id="image" accept="image/*" style="display: none;">
-            <input type="file" id="docsfile" accept=".pptx,.pdf,.docx,.doc,.odt,.txt,.xlsx,.xls,.ods,.csv" style="display: none;">
-            <button id="ocrButton" type="button"><i class="fa-solid fa-file-image"></i></button>
+            <!-- <input type="file" id="image" accept="image/*" style="display: none;"> -->
+            <input type="file" id="docsfile" accept="image/*, .pptx,.pdf,.docx,.doc,.odt,.txt,.xlsx,.xls,.ods,.csv" style="display: none;">
+            <!-- <button id="ocrButton" type="button"><i class="fa-solid fa-file-image"></i></button> -->
             <button id="extractButton" type="button"><i class="fa-solid fa-file"></i></button>
         </div>
         <div id="buttons">
@@ -178,41 +178,41 @@
         </div>
     </div>
     <script>
-        document.getElementById('ocrButton').onclick = function () {
-            document.getElementById('image').click();
-        };
+        // document.getElementById('ocrButton').onclick = function () {
+        //     document.getElementById('image').click();
+        // };
 
         document.getElementById('extractButton').onclick = function () {
             document.getElementById('docsfile').click();
         };
 
-        document.getElementById('image').onchange = async function () {
-            const formData = new FormData();
-            formData.append('image', this.files[0]);
+        // document.getElementById('image').onchange = async function () {
+        //     const formData = new FormData();
+        //     formData.append('image', this.files[0]);
 
-            // Show the full-screen spinner
-            document.getElementById('spinner-overlay').style.display = 'flex';
+        //     // Show the full-screen spinner
+        //     document.getElementById('spinner-overlay').style.display = 'flex';
 
-            try {
-                const response = await fetch('/ocr_v1', {
-                    method: 'POST',
-                    body: formData
-                });
+        //     try {
+        //         const response = await fetch('/ocr_v1', {
+        //             method: 'POST',
+        //             body: formData
+        //         });
 
-                const result = await response.json();
-                if (result.text) {
-                    document.getElementById('words').value = result.text;
-                } else {
-                    alert('Error: ' + (result.error || 'Unknown error'));
-                }
-            } catch (error) {
-                alert('Error processing the OCR request.');
-                console.error('Error:', error);
-            } finally {
-                // Hide the full-screen spinner
-                document.getElementById('spinner-overlay').style.display = 'none';
-            }
-        };
+        //         const result = await response.json();
+        //         if (result.text) {
+        //             document.getElementById('words').value = result.text;
+        //         } else {
+        //             alert('Error: ' + (result.error || 'Unknown error'));
+        //         }
+        //     } catch (error) {
+        //         alert('Error processing the OCR request.');
+        //         console.error('Error:', error);
+        //     } finally {
+        //         // Hide the full-screen spinner
+        //         document.getElementById('spinner-overlay').style.display = 'none';
+        //     }
+        // };
 
         document.getElementById('docsfile').onchange = async function () {
             const formData = new FormData();

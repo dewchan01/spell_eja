@@ -8,7 +8,6 @@ from docx import Document
 import pandas as pd
 
 from PIL import Image
-import requests
 from app import app
 from gtts import gTTS
 from fuzzywuzzy import fuzz
@@ -22,11 +21,27 @@ import gc
 words = []
 lang = None
 
-def submit_words(words_list, language):
+def _submit_words(words_list, language):
     global words, lang
     words = [word.strip() for word in words_list if word.strip()]
     lang = language
     return 'Words submitted'
+
+def _easyocr(image_file):
+    image_path = './app/static/images/uploaded_image.jpg'
+    image_file.save(image_path)
+    img = cv2.imread(image_path)
+    blur = cv2.GaussianBlur(img,(5,5),0)
+    reader = easyocr.Reader(['ch_sim', 'en'])
+    result = reader.readtext(blur)
+    results = []
+    for (bbox, text, _) in result:
+        (_, _, _, _) = bbox
+        results.append(text)
+    del result
+    gc.collect()
+    os.remove(image_path)
+    return jsonify({'text': '\n'.join(results)})
 
 @app.route('/')
 def index():
@@ -36,7 +51,7 @@ def index():
 def submit_words_route():
     words_list = request.form['words'].split('\n')
     language = request.form['lang']
-    submit_words(words_list, language)
+    _submit_words(words_list, language)
     return redirect(url_for('dictation_page'))
 
 @app.route('/dictation_page.html')
@@ -84,20 +99,7 @@ def easyocr_api():
         return jsonify({'error': 'No image file provided\n没有提供图像文件'}), 400
 
     image_file = request.files['image']
-    image_path = './app/static/images/uploaded_image.jpg'
-    image_file.save(image_path)
-    img = cv2.imread(image_path)
-    blur = cv2.GaussianBlur(img,(5,5),0)
-    reader = easyocr.Reader(['ch_sim', 'en'])
-    result = reader.readtext(blur)
-    results = []
-    for (bbox, text, _) in result:
-        (_, _, _, _) = bbox
-        results.append(text)
-    del result
-    gc.collect()
-    os.remove(image_path)
-    return jsonify({'text': '\n'.join(results)})
+    return _easyocr(image_file)
 
 @app.route('/similarities_v1', methods=['POST'])
 def get_similarities():
@@ -147,74 +149,86 @@ def get_similarities():
 
     return jsonify(results)
 
-@app.route('/ocr', methods=['POST'])
-def ocr_page():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image file provided\n没有提供图像文件'}), 400
+# @app.route('/ocr', methods=['POST'])
+# def ocr_page():
+#     if 'image' not in request.files:
+#         return jsonify({'error': 'No image file provided\n没有提供图像文件'}), 400
 
-    image_file = request.files['image']
-    image_data = base64.b64encode(image_file.read()).decode('utf-8')
-    image_url = f"data:image/png;base64,{image_data}"
-    headers = {'Content-Type': 'application/json'}
-    data = {
-        "data": [image_url, ["en", "ch_sim"]],
-        "session_hash": "k65qy1668ak",
-        "action": "predict"
-    }
-    response = requests.post('https://tomofi-easyocr.hf.space/api/queue/push/', headers=headers, data=json.dumps(data))
-    new_data = {
-        "hash":response.json()['hash']
-    }
-    while True:
-        response = requests.post('https://tomofi-easyocr.hf.space/api/queue/status/', headers=headers, data=json.dumps(new_data))
-        if response.json()['status'] == "COMPLETE":
-            break
-        else:
-            time.sleep(2)
-    response = response.json()['data']['data'][1]['data']
-    extracted_texts = [text[0] for text in response]
-    return jsonify({'text': '\n'.join(extracted_texts)})
+#     image_file = request.files['image']
+#     image_data = base64.b64encode(image_file.read()).decode('utf-8')
+#     image_url = f"data:image/png;base64,{image_data}"
+#     headers = {'Content-Type': 'application/json'}
+#     data = {
+#         "data": [image_url, ["en", "ch_sim"]],
+#         "session_hash": "k65qy1668ak",
+#         "action": "predict"
+#     }
+#     response = requests.post('https://tomofi-easyocr.hf.space/api/queue/push/', headers=headers, data=json.dumps(data))
+#     new_data = {
+#         "hash":response.json()['hash']
+#     }
+#     while True:
+#         response = requests.post('https://tomofi-easyocr.hf.space/api/queue/status/', headers=headers, data=json.dumps(new_data))
+#         if response.json()['status'] == "COMPLETE":
+#             break
+#         else:
+#             time.sleep(2)
+#     response = response.json()['data']['data'][1]['data']
+#     extracted_texts = [text[0] for text in response]
+#     return jsonify({'text': '\n'.join(extracted_texts)})
 
-@app.route('/similarities', methods=['POST'])
-def get_similarities_page():
-    data = request.get_json()
-    results = {}
+# @app.route('/similarities', methods=['POST'])
+# def get_similarities_page():
+#     data = request.get_json()
+#     results = {}
 
-    for key, value in data.items():
-        try:
-            headers = {'Content-Type': 'application/json'}
-            data = {
-                "data": [value, ["en", "ch_sim"]],
-                "session_hash": "k65qy1668ak",
-                "action": "predict"
-            }
-            response = requests.post('https://tomofi-easyocr.hf.space/api/queue/push/', headers=headers, data=json.dumps(data))
-            new_data = {
-                "hash":response.json()['hash']
-            }
-            while True:
-                response = requests.post('https://tomofi-easyocr.hf.space/api/queue/status/', headers=headers, data=json.dumps(new_data))
-                if response.json()['status'] == "COMPLETE":
-                    break
-                else:
-                    time.sleep(2)
-            response = response.json()['data']['data'][1]['data']
-            extracted_texts = [text[0] for text in response]
-            extracted_text = ' '.join(extracted_texts).lower().replace(' ', '')
-            similarity = fuzz.ratio(extracted_text, key.lower())
+#     for key, value in data.items():
+#         try:
+#             headers = {'Content-Type': 'application/json'}
+#             data = {
+#                 "data": [value, ["en", "ch_sim"]],
+#                 "session_hash": "k65qy1668ak",
+#                 "action": "predict"
+#             }
+#             response = requests.post('https://tomofi-easyocr.hf.space/api/queue/push/', headers=headers, data=json.dumps(data))
+#             new_data = {
+#                 "hash":response.json()['hash']
+#             }
+#             while True:
+#                 response = requests.post('https://tomofi-easyocr.hf.space/api/queue/status/', headers=headers, data=json.dumps(new_data))
+#                 if response.json()['status'] == "COMPLETE":
+#                     break
+#                 else:
+#                     time.sleep(2)
+#             response = response.json()['data']['data'][1]['data']
+#             extracted_texts = [text[0] for text in response]
+#             extracted_text = ' '.join(extracted_texts).lower().replace(' ', '')
+#             similarity = fuzz.ratio(extracted_text, key.lower())
 
-            results[key] = {'ocr_text': extracted_text, 'similarity': similarity}
-            # results[key] = {'ocr_text': key, 'similarity': random.randint(60, 100)}
+#             results[key] = {'ocr_text': extracted_text, 'similarity': similarity}
+#             # results[key] = {'ocr_text': key, 'similarity': random.randint(60, 100)}
 
-        except Exception as e:
-            results[key] = {'error': f'OCR processing error: {str(e)}'}
+#         except Exception as e:
+#             results[key] = {'error': f'OCR processing error: {str(e)}'}
 
-    return jsonify(results)
+#     return jsonify(results)
 
 @app.route('/extract_docsfile_text', methods=['POST'])
 def extract_docsfile_text():
     file = request.files['docsfile']
-    if file.filename.endswith('.pptx'):
+    if file.filename.endswith('.jpg') or file.filename.endswith('.png') or file.filename.endswith('.jpeg') or file.filename.endswith('.webp'):
+        text_runs = []
+        response = _easyocr(file)
+        print(response)
+        if response and response.is_json:
+            text_data = response.get_json()
+            if 'text' in text_data:
+                text_runs.append(text_data['text'])
+            else:
+                return jsonify({'error': 'Unexpected response format from easyocr_api'}), 400
+        else:
+            return jsonify({'error': 'Error occurred while calling easyocr_api'}), 400
+    elif file.filename.endswith('.pptx'):
         prs = Presentation(file)
         text_runs = []
         for slide in prs.slides:
