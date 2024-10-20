@@ -227,18 +227,21 @@ def extract_docsfile_text():
                 return jsonify({'error': 'Unexpected response format from easyocr_api'}), 400
         else:
             return jsonify({'error': 'Error occurred while calling easyocr_api'}), 400
-    elif file.filename.endswith('.pptx'):
+    elif file.filename.endswith('.pptx') or file.filename.endswith('.ppt'):
         prs = Presentation(file)
         text_runs = []
         for slide in prs.slides:
             for shape in slide.shapes:
                 if hasattr(shape, "text"):
                     text_runs.append(shape.text)
+                text_runs.append('\n')
+        text_runs.pop(-1)
     elif file.filename.endswith('.pdf'):
         pdf = PdfReader(file)
         text_runs = []
         for page in pdf.pages:
             text_runs.append(page.extract_text())
+        text_runs[-1] = text_runs[-1].replace('\n', '')
     elif file.filename.endswith(('.docx', '.doc', '.odt', '.txt')):
         doc = Document(file)
         text_runs = []
@@ -274,4 +277,5 @@ def extract_docsfile_text():
                 return {"error": "Unexpected format."}
     else:
         return jsonify({'error': 'File type not supported'})
-    return jsonify({'text': '\n'.join(text_runs)})
+    # return jsonify({'text': '\n'.join(text_runs)})
+    return jsonify({'text': ''.join(text_runs)})
