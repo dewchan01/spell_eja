@@ -219,7 +219,6 @@ def extract_docsfile_text():
     if file.filename.endswith('.jpg') or file.filename.endswith('.png') or file.filename.endswith('.jpeg') or file.filename.endswith('.webp'):
         text_runs = []
         response = _easyocr(file)
-        print(response)
         if response and response.is_json:
             text_data = response.get_json()
             if 'text' in text_data:
