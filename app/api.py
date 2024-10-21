@@ -242,11 +242,13 @@ def extract_docsfile_text():
         for page in pdf.pages:
             text_runs.append(page.extract_text())
         text_runs[-1] = text_runs[-1].replace('\n', '')
-    elif file.filename.endswith(('.docx', '.doc', '.odt', '.txt')):
+    elif file.filename.endswith(('.docx', '.doc', '.odt')):
         doc = Document(file)
         text_runs = []
         for para in doc.paragraphs:
             text_runs.append(para.text)
+    elif file.filename.endswith('.txt'):
+        text_runs = file.read().decode('utf-8').split('\n')
     elif file.filename.endswith(('.xlsx', '.xls', '.ods', '.csv')):
         text_runs = []
         if file.filename.endswith('.xlsx'):
