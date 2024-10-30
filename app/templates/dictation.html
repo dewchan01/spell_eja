@@ -264,9 +264,8 @@
                 const currentY = touch.clientY;
 
                 // Move the dragged item
-                const offsetY = currentY - initialY; // Calculate the offset
-                draggedItem.style.transform = `translateY(${offsetY}px)`; // Move the dragged item vertically
-
+                // const offsetY = initialY; // Calculate the offset
+                draggedItem.style.transform = `scale(1.1)`; // Move the dragged item vertically and make it a bit bigger
                 // Determine where to insert the dragged item
                 const afterElement = getDragAfterElement(sortableList, currentY); // Use currentY for the new insertion logic
                 if (afterElement == null) {
